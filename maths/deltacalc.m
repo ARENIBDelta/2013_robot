@@ -1,8 +1,8 @@
 function [alpha,beta,gamma] = deltacalc(X,Y,Z,inverted)
 %function deltacalc()
-    c = 130;
-    a = 70;
-    b = 150;
+    c = 30;
+    a = 75;
+    b = 100;
     C1 = [c*sqrt(3)/2*cos(-150/180*pi); c*sqrt(3)/2*sin(-150/180*pi); 0];
     C2 = [c*sqrt(3)/2*cos(90/180*pi); c*sqrt(3)/2*sin(90/180*pi); 0];
     C3 = [c*sqrt(3)/2*cos(-30/180*pi); c*sqrt(3)/2*sin(-30/180*pi); 0];
@@ -15,14 +15,13 @@ function [alpha,beta,gamma] = deltacalc(X,Y,Z,inverted)
 %     Y = 0;
 %     Z = 100;
     
-    d = 145;
+    d = 50;
     D1 = [X+d*sqrt(3)/2*cos(-150/180*pi); Y+d*sqrt(3)/2*sin(-150/180*pi); Z];
     D2 = [X+d*sqrt(3)/2*cos(90/180*pi); Y+d*sqrt(3)/2*sin(90/180*pi); Z];
     D3 = [X+d*sqrt(3)/2*cos(-30/180*pi); Y+d*sqrt(3)/2*sin(-30/180*pi); Z];
 
-    %alphav
+    %alpha
     Dp1 = line_projection([0;0;Z], C1 + [0;0;Z], D1);
-    d0 = norm(Dp1 - C1);
     bp = sqrt(b^2-norm(D1-Dp1)^2);
 
     Dp1u = (C1 - Dp1)/norm(C1 - Dp1);
@@ -44,11 +43,10 @@ function [alpha,beta,gamma] = deltacalc(X,Y,Z,inverted)
     
     %beta
     Dp2 = line_projection([0;0;Z], C2 + [0;0;Z], D2);
-    d0 = norm(Dp2 - C2);
     bp = sqrt(b^2-norm(D2-Dp2)^2);
     
     Dp2u = (C2 - Dp2)/norm(C2 - Dp2);
-    Dp2ut = -cross(Dp2u, orthoC2);
+    Dp2ut = cross(Dp2u, orthoC2);
     if (inverted)
         Dp2ut = - Dp2ut;
     end
@@ -66,11 +64,10 @@ function [alpha,beta,gamma] = deltacalc(X,Y,Z,inverted)
     
     %gamma
     Dp3 = line_projection([0;0;Z], C3 + [0;0;Z], D3);
-    d0 = norm(Dp3 - C3);
     bp = sqrt(b^2-norm(D3-Dp3)^2);
     
     Dp3u = (C3 - Dp3)/norm(C3 - Dp3);
-    Dp3ut = -cross(Dp3u, orthoC3);
+    Dp3ut = cross(Dp3u, orthoC3);
     if (inverted)
         Dp3ut = - Dp3ut;
     end
