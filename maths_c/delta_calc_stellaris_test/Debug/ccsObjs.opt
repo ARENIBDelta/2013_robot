@@ -1,0 +1,1 @@
+"./main.obj" "./delta_calc.obj" -l"libc.a" -l"C:\ti\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120h5qr.cmd" 
