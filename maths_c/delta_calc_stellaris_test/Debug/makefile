@@ -117,7 +117,7 @@ all: delta_calc_stellaris_test.out
 delta_calc_stellaris_test.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Linker'
-	"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/bin/cl470" -mv7M4 --code_state=32 --float_support=FPv4SPD16 --abi=eabi -me -O4 --opt_for_speed=5 -g --diag_warning=225 --display_error_number -z --stack_size=2048 -m"delta_calc_stellaris_test.map" --heap_size=0 -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/lib" -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include" --reread_libs --warn_sections --display_error_number --rom_model -o "delta_calc_stellaris_test.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/bin/cl470" -mv7M4 --code_state=32 --float_support=FPv4SPD16 --abi=eabi -me -g --diag_warning=225 --display_error_number -z --stack_size=2048 -m"delta_calc_stellaris_test.map" --heap_size=0 -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/lib" -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include" --reread_libs --warn_sections --display_error_number --rom_model -o "delta_calc_stellaris_test.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -18,6 +18,14 @@ inline float v3_norm_p(v3 *a) {
 	return sqrt(a->x*a->x + a->y*a->y + a->z*a->z);
 }
 
+inline float v3_norm_squared(v3 a) {
+	return a.x*a.x + a.y*a.y + a.z*a.z;
+}
+
+inline float v3_norm_squared_p(v3 *a) {
+	return a->x*a->x + a->y*a->y + a->z*a->z;
+}
+
 inline v3 v3_sum(v3 a, v3 b) {
 	v3 res;
 	res.x = a.x + b.x;
@@ -84,16 +92,16 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	// alpha
 	//
 	v3 C1, D1, orthoC1, Dp1;
-	C1.x = params.c * sqrt(3)/2. * cos(-150./180.*M_PI);
-	C1.y = params.c * sqrt(3)/2. * sin(-150./180.*M_PI);
+	C1.x = params.c * -0.750000000000000; //sqrt(3)/2. * cos(-150./180.*M_PI);
+	C1.y = params.c * -0.433012701892219; //sqrt(3)/2. * sin(-150./180.*M_PI);
 	C1.z = 0;
 
-	D1.x = X + (params.d * sqrt(3)/2. * cos(-150./180.*M_PI));
-	D1.y = Y + (params.d * sqrt(3)/2. * sin(-150./180.*M_PI));
+	D1.x = X + (params.d * -0.750000000000000);
+	D1.y = Y + (params.d * -0.433012701892219);
 	D1.z = Z;
 
-	orthoC1.x = sin(-150./180.*M_PI);
-	orthoC1.y = -cos(-150./180.*M_PI);
+	orthoC1.x = -0.500000000000000;
+	orthoC1.y = 0.866025403784439;
 	orthoC1.z = 0;
 
 	v3 lp1, lp2, D1mDp1;
@@ -102,8 +110,8 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	v3_sum_p(&lp1, &C1, &lp2);
 	line_projection3d_p(&lp1, &lp2, &D1, &Dp1);
 	v3_diff_p(&D1, &Dp1, &D1mDp1);
-	float D1Dp1norm = v3_norm_p(&D1mDp1);
-	bp = sqrt(params.b*params.b - D1Dp1norm*D1Dp1norm);
+	float D1Dp1norm = v3_norm_squared_p(&D1mDp1);
+	bp = sqrt(params.b*params.b - D1Dp1norm);
 
 	v3 Dp1u, Dp1ut, C1mDp1;
 	float C1mDp1_norm;
@@ -133,16 +141,16 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	// beta
 	//
 	v3 C2, D2, orthoC2, Dp2;
-	C2.x = params.c * sqrt(3)/2. * cos(90./180.*M_PI);
-	C2.y = params.c * sqrt(3)/2. * sin(90./180.*M_PI);
+	C2.x = params.c * 0; //sqrt(3)/2. * cos(90./180.*M_PI);
+	C2.y = params.c * 0.866025403784439; //sqrt(3)/2. * sin(90./180.*M_PI);
 	C2.z = 0;
 
-	D2.x = X + (params.d * sqrt(3)/2. * cos(90./180.*M_PI));
-	D2.y = Y + (params.d * sqrt(3)/2. * sin(90./180.*M_PI));
+	D2.x = X + (params.d * 0);
+	D2.y = Y + (params.d * 0.866025403784439);
 	D2.z = Z;
 
-	orthoC2.x = sin(90./180.*M_PI);
-	orthoC2.y = -cos(90./180.*M_PI);
+	orthoC2.x = 1;
+	orthoC2.y = 0;
 	orthoC2.z = 0;
 
 	v3 D2mDp2;
@@ -150,8 +158,8 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	v3_sum_p(&lp1, &C2, &lp2);
 	line_projection3d_p(&lp1, &lp2, &D2, &Dp2);
 	v3_diff_p(&D2, &Dp2, &D2mDp2);
-	float D2Dp2norm = v3_norm_p(&D2mDp2);
-	bp = sqrt(params.b*params.b - D2Dp2norm*D2Dp2norm);
+	float D2Dp2norm = v3_norm_squared_p(&D2mDp2);
+	bp = sqrt(params.b*params.b - D2Dp2norm);
 
 	v3 Dp2u, Dp2ut, C2mDp2;
 	float C2mDp2_norm;
@@ -180,16 +188,16 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	// gamma
 	//
 	v3 C3, D3, orthoC3, Dp3;
-	C3.x = params.c * sqrt(3)/2. * cos(-30./180.*M_PI);
-	C3.y = params.c * sqrt(3)/2. * sin(-30./180.*M_PI);
+	C3.x = params.c * 0.750000000000000; //sqrt(3)/2. * cos(-30./180.*M_PI);
+	C3.y = params.c * -0.433012701892219; //sqrt(3)/2. * sin(-30./180.*M_PI);
 	C3.z = 0;
 
-	D3.x = X + (params.d * sqrt(3)/2. * cos(-30./180.*M_PI));
-	D3.y = Y + (params.d * sqrt(3)/2. * sin(-30./180.*M_PI));
+	D3.x = X + (params.d * 0.750000000000000);
+	D3.y = Y + (params.d * -0.433012701892219);
 	D3.z = Z;
 
-	orthoC3.x = sin(-30./180.*M_PI);
-	orthoC3.y = -cos(-30./180.*M_PI);
+	orthoC3.x = -0.5;
+	orthoC3.y = -0.866025403784439;
 	orthoC3.z = 0;
 
 	v3 D3mDp3;
@@ -197,8 +205,8 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	v3_sum_p(&lp1, &C3, &lp2);
 	line_projection3d_p(&lp1, &lp2, &D3, &Dp3);
 	v3_diff_p(&D3, &Dp3, &D3mDp3);
-	float D3Dp3norm = v3_norm_p(&D3mDp3);
-	bp = sqrt(params.b*params.b - D3Dp3norm*D3Dp3norm);
+	float D3Dp3norm = v3_norm_squared_p(&D3mDp3);
+	bp = sqrt(params.b*params.b - D3Dp3norm);
 
 	v3 Dp3u, Dp3ut, C3mDp3;
 	float C3mDp3_norm;
