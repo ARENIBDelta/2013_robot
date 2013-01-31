@@ -1,3 +1,5 @@
+#define PART_LM4F120B2QR
+
 #include "inc/hw_types.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_timer.h"
@@ -30,9 +32,9 @@ void config_timer_for_pwm(uint8_t timer, uint32_t frequency) {
 	   case 0: {
 		  // Configure output, PB6/7 as T0CCP0/1
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-		  GPIOPinConfigure(0x00010007);
+		  GPIOPinConfigure(GPIO_PB0_T2CCP0);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_6);
-		  GPIOPinConfigure(0x00011C07);
+		  GPIOPinConfigure(GPIO_PB7_T0CCP1);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_7);
 		  // Configure timer
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
@@ -56,9 +58,9 @@ void config_timer_for_pwm(uint8_t timer, uint32_t frequency) {
 	   case 1: {
 		   // Configure output, PB4/5 as T1CCP0/1
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-		  GPIOPinConfigure(0x00011007);
+		  GPIOPinConfigure(GPIO_PB4_T1CCP0);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_4);
-		  GPIOPinConfigure(0x00011407);
+		  GPIOPinConfigure(GPIO_PB5_T1CCP1);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_5);
 		  // Configure timer
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
@@ -82,9 +84,9 @@ void config_timer_for_pwm(uint8_t timer, uint32_t frequency) {
 	   case 2: {
 		   // Configure output, PB0/1 as T2CCP0/1
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-		  GPIOPinConfigure(0x00010007);
+		  GPIOPinConfigure(GPIO_PB0_T2CCP0);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_0);
-		  GPIOPinConfigure(0x00010407);
+		  GPIOPinConfigure(GPIO_PB1_T2CCP1);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_1);
 		  // Configure timer
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
@@ -108,9 +110,9 @@ void config_timer_for_pwm(uint8_t timer, uint32_t frequency) {
 	   case 3: {
 		  // Configure output, PB2/3 as T3CCP0/1
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-		  GPIOPinConfigure(0x00010807);
+		  GPIOPinConfigure(GPIO_PB2_T3CCP0);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_2);
-		  GPIOPinConfigure(0x00010C07);
+		  GPIOPinConfigure(GPIO_PB3_T3CCP1);
 		  GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_3);
 		  // Configure timer
 		  SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER3);
@@ -140,54 +142,63 @@ void config_timer_for_pwm(uint8_t timer, uint32_t frequency) {
 void set_pwm (uint8_t chan, uint32_t pulse_duration, uint8_t pulse_unit) {
    uint32_t pwm_period;
    switch(pulse_unit) {
-   case PULSE_100NS:
-	   pwm_period = tics_100ns*pulse_duration;
-	   break;
-   case PULSE_MS:
-	   pwm_period = tics_ms*pulse_duration;
-	   break;
-   case PULSE_US:
-   default:
-	   pwm_period = tics_us*pulse_duration;
-	   break;
+	   case PULSE_100NS:
+		   pwm_period = tics_100ns*pulse_duration;
+		   break;
+	   case PULSE_MS:
+		   pwm_period = tics_ms*pulse_duration;
+		   break;
+	   case PULSE_US:
+	   default:
+		   pwm_period = tics_us*pulse_duration;
+		   break;
    }
 
    uint8_t pwm_extender = pwm_period >> 16;
    pwm_period &= 0xFFFF;
    switch (chan) {
-   case 0: {
-      TimerPrescaleMatchSet(TIMER0_BASE, TIMER_A, pwm_extender);
-      TimerMatchSet(TIMER0_BASE, TIMER_A, pwm_period);
-      break;   }
-   case 1: {
-      TimerPrescaleMatchSet(TIMER0_BASE, TIMER_B, pwm_extender);
-      TimerMatchSet(TIMER0_BASE, TIMER_B, pwm_period);
-      break;   }
-   case 2: {
-      TimerPrescaleMatchSet(TIMER1_BASE, TIMER_A, pwm_extender);
-      TimerMatchSet(TIMER1_BASE, TIMER_A, pwm_period);
-      break;   }
-   case 3: {
-      TimerPrescaleMatchSet(TIMER1_BASE, TIMER_B, pwm_extender);
-      TimerMatchSet(TIMER1_BASE, TIMER_B, pwm_period);
-      break;   }
-   case 4: {
-      TimerPrescaleMatchSet(TIMER2_BASE, TIMER_A, pwm_extender);
-      TimerMatchSet(TIMER2_BASE, TIMER_A, pwm_period);
-      break;   }
-   case 5: {
-      TimerPrescaleMatchSet(TIMER2_BASE, TIMER_B, pwm_extender);
-      TimerMatchSet(TIMER2_BASE, TIMER_B, pwm_period);
-      break;   }
-   case 6: {
-      TimerPrescaleMatchSet(TIMER3_BASE, TIMER_A, pwm_extender);
-      TimerMatchSet(TIMER3_BASE, TIMER_A, pwm_period);
-      break;   }
-   case 7: {
-      TimerPrescaleMatchSet(TIMER3_BASE, TIMER_B, pwm_extender);
-      TimerMatchSet(TIMER3_BASE, TIMER_B, pwm_period);
-      break;   }
-   default: { break; }
+	   case 0: {
+		  TimerPrescaleMatchSet(TIMER0_BASE, TIMER_A, pwm_extender);
+		  TimerMatchSet(TIMER0_BASE, TIMER_A, pwm_period);
+		  break;
+	   }
+	   case 1: {
+		  TimerPrescaleMatchSet(TIMER0_BASE, TIMER_B, pwm_extender);
+		  TimerMatchSet(TIMER0_BASE, TIMER_B, pwm_period);
+		  break;
+	   }
+	   case 2: {
+		  TimerPrescaleMatchSet(TIMER1_BASE, TIMER_A, pwm_extender);
+		  TimerMatchSet(TIMER1_BASE, TIMER_A, pwm_period);
+		  break;
+	   }
+	   case 3: {
+		  TimerPrescaleMatchSet(TIMER1_BASE, TIMER_B, pwm_extender);
+		  TimerMatchSet(TIMER1_BASE, TIMER_B, pwm_period);
+		  break;   }
+	   case 4: {
+		  TimerPrescaleMatchSet(TIMER2_BASE, TIMER_A, pwm_extender);
+		  TimerMatchSet(TIMER2_BASE, TIMER_A, pwm_period);
+		  break;
+	   }
+	   case 5: {
+		  TimerPrescaleMatchSet(TIMER2_BASE, TIMER_B, pwm_extender);
+		  TimerMatchSet(TIMER2_BASE, TIMER_B, pwm_period);
+		  break;
+	   }
+	   case 6: {
+		  TimerPrescaleMatchSet(TIMER3_BASE, TIMER_A, pwm_extender);
+		  TimerMatchSet(TIMER3_BASE, TIMER_A, pwm_period);
+		  break;
+	   }
+	   case 7: {
+		  TimerPrescaleMatchSet(TIMER3_BASE, TIMER_B, pwm_extender);
+		  TimerMatchSet(TIMER3_BASE, TIMER_B, pwm_period);
+		  break;
+	   }
+	   default: {
+		   break;
+	   }
    }
 }
 
