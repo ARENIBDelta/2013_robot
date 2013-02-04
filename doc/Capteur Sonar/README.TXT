@@ -1,1 +1,0 @@
-Ce n'est pas forcément ce modèle précis
