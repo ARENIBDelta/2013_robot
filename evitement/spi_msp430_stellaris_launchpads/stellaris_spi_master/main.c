@@ -12,6 +12,16 @@
 #include "inc/hw_gpio.h"
 #include "driverlib/gpio.h"
 
+#include "layer2p.h"
+#include "stdlib.h"
+
+int truc;
+layer2p_ctx ctx;
+
+void spi_transmit(unsigned char data, unsigned char lastbyte) {
+	SSIDataPut(SSI1_BASE, data);
+}
+
 /*
  * Test de communication SPI entre un kit EK-LM4F120XL et un kit
  * MSP-EXP430G2.
@@ -37,23 +47,34 @@ void main(void) {
     GPIOPinConfigure(GPIO_PD2_SSI1RX);
     GPIOPinConfigure(GPIO_PD3_SSI1TX);
     GPIOPinTypeSSI(GPIO_PORTD_BASE,
-            GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
-    SSIConfigSetExpClk(SSI1_BASE, SysCtlClockGet(), SSI_FRF_MOTO_MODE_3,
-                       SSI_MODE_MASTER, 1000, 8);
+    		GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
+    SSIConfigSetExpClk(SSI1_BASE, SysCtlClockGet(), SSI_FRF_MOTO_MODE_0,
+                       SSI_MODE_MASTER, 10000, 8);
     SSIEnable(SSI1_BASE);
 
-    unsigned char data = 0xCD;
-    while(1) {
-        data++;
+	layer2p_ctx_init(&ctx);
+	layer2p_set_linksend_callback(&ctx, &spi_transmit);
+	layer2p_reset(&ctx);
 
-        //Envoie
-        SSIDataPut(SSI1_BASE, data);
-        unsigned long pulData;
+	struct some_data {
+		char chars[5];
+		unsigned int a1;
+		unsigned int a2;
+		unsigned int a3;
+	} data;
 
-        //Reception
-        SSIDataGet(SSI1_BASE, &pulData);
+	data.chars[0] = 'A';
+	data.chars[1] = 0xAA;
+	data.chars[2] = 'C';
+	data.chars[3] = 'D';
+	data.chars[4] = 'E';
+	data.a1 = 0x11111111;
+	data.a2 = 0x22222222;
+	data.a3 = 0x33333333;
 
-        //Delai
-        SysCtlDelay(1000000);
-    }
+	while(1) {
+		layer2p_send(&ctx, (unsigned char *)&data, sizeof(data));
+		SysCtlDelay(1000000);
+	}
+
 }
