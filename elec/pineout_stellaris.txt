@@ -1,0 +1,25 @@
+   Destination   Désignation  J1    J3   Designation   Destination
+   
+   VCC                   VCC  3.3V  VBUS
+                              PB5   PD0  SSI0CLK       SPI QEIS UCA0CLK
+   Tourelle PWM          PWM  PB1   PD1
+   Tourelle Anal         AIN  PE4   PD2  SSI0RX        SPI QEIS UCA0SOMI
+   Moteur1 Dir      GPIO PE5  PE5   PD3  SSI0TX        SPI QEIS UCA0SIMO
+                              PB4   PE1  GPIO PE1      SPI QEIS CS
+                              PA5   PE2
+                              PA6   PE3
+                              PA7   PF1  SSI1TX        Reserve SSI
+   
+                            
+   Destination   Désignation  J4    J2   Designation   Destination
+   
+   Reserve SSI       SSI1CLK  PF2   GND  GND           GND
+   Moteur1 Dir      GPIO PF3  PF3   PB2
+   Moteur2 Dir      GPIO PB3  PB3   P30
+   Moteur3 Dir      GPIO PC4  PC4   PF0  SSI1RX        Reserve SSI
+   Moteur1 PWM           PWM  PC5   RST  /    
+   Moteur2 PWM           PWM  PC6   PB7  SSI2TX        UART BT RX
+   Moteur3 PWM           PWM  PC7   PB6  SSI2RX        UART BT TX
+   Moteur4 PWM           PWM  PD6   PA4  GPIO PA4      Moteur4 Dir
+   Moteur5 PWM           PWM  PD7   PA6  GPIO PA6      Moteur5 Dir
+   Moteur6 PWM           PWM  PF4   PA2  GPIO PA2      Moteur6 Dir
