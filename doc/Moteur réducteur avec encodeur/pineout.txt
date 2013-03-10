@@ -1,0 +1,7 @@
+Couleur             fonction
+Noir                      Motor+
+Rouge                  Motor-
+Marron                  VCC
+Vert                       GND
+Bleu                        SA
+Violet                     SB
