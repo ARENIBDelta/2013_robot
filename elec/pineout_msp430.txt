@@ -1,0 +1,9 @@
+                P1.0    GND
+    SOMI        P1.1    XOUT
+    SIMO        P1.2    TEST
+                P1.3    RST
+    CLK         P1.4    P1.7
+    CS          P1.5    P1.6        CS
+    QEI1        P2.0    P2.5        QEI3
+    QEI1        P2.1    P2.4        QEI3
+    QEI2        P2.2    P2.3        QEI2
