@@ -36,6 +36,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "parts/pccontrol.h"
 #include "parts/control.h"
 #include "platform/pwm.h"
 #include "platform/uartbt.h"
@@ -45,24 +46,9 @@ void main(void) {
     SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
                        SYSCTL_XTAL_16MHZ);
     configure_uart_bt();
-    config_pwms();
+    pccontrol_init();
+    //config_pwms();
     //control_init();
-
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3); //Dir moteur 1
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-	GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4);  //Dirs moteur 6, 5, 4
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-	GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_3); //Dir moteur 2
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
-	GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_4); //Dir moteur 3
-
-    GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0 ? GPIO_PIN_3 : 0);
-    GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3, 0 ? GPIO_PIN_3 : 0);
-	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, 0 ? GPIO_PIN_4 : 0);
-	GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_4, 0 ? GPIO_PIN_4 : 0);
-	GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_3, 0 ? GPIO_PIN_3 : 0);
-	GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_2, 0 ? GPIO_PIN_2 : 0);
 
 	while(1) {
 		//la patience est une vertue qui s'aquiert avec de la patience

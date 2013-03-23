@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#define LAYER2P_RECV_BUFFER_SIZE 32
+#define LAYER2P_RECV_BUFFER_SIZE 96
 #define LAYER2P_ESCAPE_BYTE 0xAA
 #define LAYER2P_START_BYTE 0x55
 #define LAYER2P_STOP_BYTE 0x54
@@ -27,8 +27,8 @@ typedef struct _layer2p_ctx {
 	layer2p_linksend linksend_callback;
 	layer2p_received recv_callback;
 	layer2p_errored error_callback;
-	unsigned char recv_buffer[LAYER2P_RECV_BUFFER_SIZE];
-	unsigned char *recv_pointer;
+	uint8_t recv_buffer[LAYER2P_RECV_BUFFER_SIZE];
+	uint8_t *recv_pointer;
 	unsigned char state; //0 => reseted, 1 => waiting for data, 2 => previous was escape char
 } layer2p_ctx;
 

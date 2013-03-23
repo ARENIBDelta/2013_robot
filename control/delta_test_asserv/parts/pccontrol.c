@@ -21,18 +21,19 @@ extern float Kp[6];
 extern float Ki[6];
 extern float Kd[6];
 
-void UART5IntHandler(void) {
+void UARTPCControlIntHandler(void) {
     unsigned long ulStatus;
-    ulStatus = UARTIntStatus(UART5_BASE, 1);
+    ulStatus = UARTIntStatus(UART0_BASE, 1);
     UARTIntClear(UART0_BASE, ulStatus);
 
-    while(UARTCharsAvail(UART5_BASE)) {
-    	layer2p_receive(&pccontrol_l2p, UARTCharGet(UART5_BASE));
+    while(UARTCharsAvail(UART0_BASE)) {
+    	unsigned char data = UARTCharGet(UART0_BASE);
+    	layer2p_receive(&pccontrol_l2p, data);
     }
 }
 
 void pccontrol_linksend(unsigned char data, unsigned char lastbyte) {
-	UARTCharPut(UART5_BASE, data);
+	UARTCharPut(UART0_BASE, data);
 }
 
 void pccontrol_received(unsigned char *data, unsigned int size) {
@@ -44,26 +45,52 @@ void pccontrol_received(unsigned char *data, unsigned int size) {
 	case PCCONTROL_GETQEIS:
 		odata.command = PCCONTROL_GETQEIS;
 		for (i=6; i--; )
-			odata.data[i] = qeis[i];
+			odata.data.data_i[i] = qeis[i];
 		layer2p_send(&pccontrol_l2p, (unsigned char *)&odata, sizeof(odata));
 		break;
 	case PCCONTROL_GETQERRS:
 		odata.command = PCCONTROL_GETQERRS;
 		for (i=6; i--; )
-			odata.data[i] = errs[i];
+			odata.data.data_i[i] = errs[i];
 		layer2p_send(&pccontrol_l2p, (unsigned char *)&odata, sizeof(odata));
 		break;
 	case PCCONTROL_GETGOALS:
 		odata.command = PCCONTROL_GETGOALS;
 		for (i=6; i--; )
-			odata.data[i] = goals[i];
+			odata.data.data_i[i] = goals[i];
 		layer2p_send(&pccontrol_l2p, (unsigned char *)&odata, sizeof(odata));
 		break;
 	case PCCONTROL_GETENABLEDS:
 		odata.command = PCCONTROL_GETENABLEDS;
 		for (i=6; i--; )
-			odata.data[i] = enabled[i];
+			odata.data.data_i[i] = enabled[i];
 		layer2p_send(&pccontrol_l2p, (unsigned char *)&odata, sizeof(odata));
+		break;
+	case PCCONTROL_GETKPDI:
+		odata.command = PCCONTROL_GETKPDI;
+		for (i=6; i--; ) {
+			odata.data.data_f[i] = Kp[i];
+			odata.data.data_f[i+6] = Kd[i];
+			odata.data.data_f[i+12] = Ki[i];
+		}
+		layer2p_send(&pccontrol_l2p, (unsigned char *)&odata, sizeof(odata));
+		break;
+
+	case PCCONTROL_SETGOALS:
+		for (i=6; i--; )
+			goals[i] = sdata->data.data_i[i];
+		break;
+	case PCCONTROL_SETQEIS:
+		for (i=6; i--; )
+			qeis[i] = sdata->data.data_i[i];
+		break;
+	case PCCONTROL_SETKPDIS:
+		for (i=6; i--; )
+			Kp[i] = sdata->data.data_f[i];
+		for (i=6; i--; )
+			Kd[i] = sdata->data.data_f[i+6];
+		for (i=6; i--; )
+			Ki[i] = sdata->data.data_f[i+12];
 		break;
 	default:
 		break;
@@ -71,7 +98,8 @@ void pccontrol_received(unsigned char *data, unsigned int size) {
 }
 
 void pccontrol_errored(void) {
-
+	int i = 0;
+	i++;
 }
 
 void pccontrol_init(void) {

@@ -10,27 +10,45 @@
 #include "driverlib/gpio.h"
 
 const char * const g_pcHex = "0123456789abcdef";
-unsigned long g_ulBase = UART5_BASE;
+unsigned long g_ulBase = INT_UART0;
 
 void configure_uart_bt(void) {
-	g_ulBase = UART5_BASE;
+	g_ulBase = INT_UART0;
 
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART5);
-    GPIOPinConfigure(GPIO_PE4_U5RX);
-    GPIOPinConfigure(GPIO_PE5_U5TX);
-    GPIOPinTypeUART(GPIO_PORTE_BASE, GPIO_PIN_4 | GPIO_PIN_5);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+    GPIOPinConfigure(GPIO_PA0_U0RX);
+    GPIOPinConfigure(GPIO_PA1_U0TX);
+    GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
 
-    UARTConfigSetExpClk(UART5_BASE, SysCtlClockGet(), 38400,
-                            (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
-                             UART_CONFIG_PAR_NONE));
-
-    IntEnable(INT_UART5);
-    UARTIntEnable(UART5_BASE, UART_INT_RX | UART_INT_TX);
+    UARTConfigSetExpClk(UART0_BASE, SysCtlClockGet(), 38400,
+                                (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
+                                 UART_CONFIG_PAR_NONE));
+    UARTFIFODisable(UART0_BASE);
+    //UARTFIFOLevelSet(UART0_BASE, UART_FIFO_TX1_8, UART_FIFO_RX1_8);
+    IntEnable(INT_UART0);
+    UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_TX);
 }
 
+//void configure_uart_bt(void) {
+//	g_ulBase = UART5_BASE;
+//
+//    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+//    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART5);
+//    GPIOPinConfigure(GPIO_PE4_U5RX);
+//    GPIOPinConfigure(GPIO_PE5_U5TX);
+//    GPIOPinTypeUART(GPIO_PORTE_BASE, GPIO_PIN_4 | GPIO_PIN_5);
+//
+//    UARTConfigSetExpClk(UART5_BASE, SysCtlClockGet(), 38400,
+//                            (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
+//                             UART_CONFIG_PAR_NONE));
+//
+//    IntEnable(INT_UART5);
+//    UARTIntEnable(UART5_BASE, UART_INT_RX | UART_INT_TX);
+//}
+
 void uart_send(unsigned char data) {
-	UARTCharPut(UART5_BASE, data);
+	UARTCharPut(UART0_BASE, data);
 }
 
 int
