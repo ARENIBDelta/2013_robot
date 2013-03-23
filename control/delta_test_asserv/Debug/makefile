@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/StupidPrograms/ti/ccsv5/tools/compiler/arm_5.0.1
+CG_TOOL_ROOT := C:/ti/ccsv5/tools/compiler/tms470_4.9.5
 
 ORDERED_OBJS += \
 $(GEN_CMDS__FLAG) \
@@ -16,7 +16,7 @@ $(GEN_CMDS__FLAG) \
 "./startup_ccs.obj" \
 "./main.obj" \
 -l"libc.a" \
--l"C:\StupidPrograms\ti\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" \
+-l"C:\ti\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" \
 "../lm4f120e5qr.cmd" \
 
 -include ../makefile.init
@@ -128,7 +128,7 @@ all: delta_test_asserv.out
 delta_test_asserv.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Linker'
-	"C:/StupidPrograms/ti/ccsv5/tools/compiler/arm_5.0.1/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --diag_warning=225 --display_error_number -z --stack_size=256 -m"delta_test_asserv.map" --heap_size=0 -i"C:/StupidPrograms/ti/ccsv5/tools/compiler/arm_5.0.1/lib" -i"C:/StupidPrograms/ti/ccsv5/tools/compiler/arm_5.0.1/include" --reread_libs --warn_sections --display_error_number --rom_model -o "delta_test_asserv.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/bin/cl470" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --diag_warning=225 --display_error_number -z --stack_size=256 -m"delta_test_asserv.map" --heap_size=0 -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/lib" -i"C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include" --reread_libs --warn_sections --display_error_number --rom_model -o "delta_test_asserv.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

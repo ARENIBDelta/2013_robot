@@ -1,1 +1,1 @@
-"./parts/pccontrol.obj" "./parts/control.obj" "./platform/uartbt.obj" "./platform/pwm.obj" "./tools/layer2p.obj" "./startup_ccs.obj" "./main.obj" -l"libc.a" -l"C:\StupidPrograms\ti\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120e5qr.cmd" 
+"./parts/pccontrol.obj" "./parts/control.obj" "./platform/uartbt.obj" "./platform/pwm.obj" "./tools/layer2p.obj" "./startup_ccs.obj" "./main.obj" -l"libc.a" -l"C:\ti\StellarisWare\driverlib\ccs-cm4f\Debug\driverlib-cm4f.lib" "../lm4f120e5qr.cmd" 

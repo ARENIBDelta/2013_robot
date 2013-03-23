@@ -1,1 +1,1 @@
-"../parts/control.c" 
+"../parts/control.c" "../parts/pccontrol.c" 

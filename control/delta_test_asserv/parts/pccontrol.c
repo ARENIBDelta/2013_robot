@@ -23,17 +23,17 @@ extern float Kd[6];
 
 void UARTPCControlIntHandler(void) {
     unsigned long ulStatus;
-    ulStatus = UARTIntStatus(UART0_BASE, 1);
-    UARTIntClear(UART0_BASE, ulStatus);
+    ulStatus = UARTIntStatus(UART5_BASE, 1);
+    UARTIntClear(UART5_BASE, ulStatus);
 
-    while(UARTCharsAvail(UART0_BASE)) {
-    	unsigned char data = UARTCharGet(UART0_BASE);
+    while(UARTCharsAvail(UART5_BASE)) {
+    	unsigned char data = UARTCharGet(UART5_BASE);
     	layer2p_receive(&pccontrol_l2p, data);
     }
 }
 
 void pccontrol_linksend(unsigned char data, unsigned char lastbyte) {
-	UARTCharPut(UART0_BASE, data);
+	UARTCharPut(UART5_BASE, data);
 }
 
 void pccontrol_received(unsigned char *data, unsigned int size) {
