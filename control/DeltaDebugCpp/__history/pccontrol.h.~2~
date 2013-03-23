@@ -1,0 +1,23 @@
+//---------------------------------------------------------------------------
+
+#ifndef pccontrolH
+#define pccontrolH
+
+typedef struct _pccontrol_frompc {
+	uint8_t command;
+	union {
+		uint32_t data_i[6];
+		float data_f[6];
+	} data;
+} pccontrol_frompc;
+
+typedef struct _pccontrol_topc {
+	uint8_t command;
+	union {
+		uint32_t data_i[6];
+		float data_f[6];
+	} data;
+} pccontrol_to_pc;
+
+//---------------------------------------------------------------------------
+#endif
