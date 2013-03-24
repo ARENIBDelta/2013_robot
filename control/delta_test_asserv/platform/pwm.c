@@ -28,13 +28,14 @@ void set_pwm_width(uint32_t timer_base, uint32_t timer, uint32_t pulse_duration,
 
 	   uint8_t pwm_extender = pwm_period >> 16;
 	   pwm_period &= 0xFFFF;
+	   //uint8_t pwm_extender = 0;
 
 	   TimerPrescaleMatchSet(timer_base, timer, pwm_extender);
        TimerMatchSet(timer_base, timer, pwm_period);
 }
 
 void config_pwms(void) {
-	uint32_t frequency = 10000;
+	uint32_t frequency = 50000;
 
 	uint32_t period1 = SysCtlClockGet() / frequency;
 	uint16_t extender1 = 0;

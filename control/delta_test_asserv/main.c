@@ -47,8 +47,9 @@ void main(void) {
                        SYSCTL_XTAL_16MHZ);
     configure_uart_bt();
     pccontrol_init();
-    //config_pwms();
-    //control_init();
+    config_pwms();
+    control_init();
+    control_go_to_origin();
 
 	while(1) {
 		//la patience est une vertue qui s'aquiert avec de la patience

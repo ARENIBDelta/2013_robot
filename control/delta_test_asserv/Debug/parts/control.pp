@@ -10,6 +10,12 @@ parts/control.obj: C:/ti/StellarisWare/driverlib/ssi.h
 parts/control.obj: C:/ti/StellarisWare/driverlib/sysctl.h
 parts/control.obj: C:/ti/StellarisWare/driverlib/timer.h
 parts/control.obj: C:/ti/StellarisWare/driverlib/interrupt.h
+parts/control.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/math.h
+parts/control.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/ymath.h
+parts/control.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/yvals.h
+parts/control.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/stdarg.h
+parts/control.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/linkage.h
+parts/control.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/_lock.h
 parts/control.obj: ../parts/../platform/pwm.h
 parts/control.obj: C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/stdint.h
 parts/control.obj: ../parts/control.h
@@ -24,6 +30,12 @@ C:/ti/StellarisWare/driverlib/ssi.h:
 C:/ti/StellarisWare/driverlib/sysctl.h: 
 C:/ti/StellarisWare/driverlib/timer.h: 
 C:/ti/StellarisWare/driverlib/interrupt.h: 
+C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/math.h: 
+C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/ymath.h: 
+C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/yvals.h: 
+C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/stdarg.h: 
+C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/linkage.h: 
+C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/_lock.h: 
 ../parts/../platform/pwm.h: 
 C:/ti/ccsv5/tools/compiler/tms470_4.9.5/include/stdint.h: 
 ../parts/control.h: 

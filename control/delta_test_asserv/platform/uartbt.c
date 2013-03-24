@@ -44,7 +44,7 @@ void configure_uart_bt(void) {
                              UART_CONFIG_PAR_NONE));
 
     IntEnable(INT_UART5);
-	UARTFIFODisable(UART5_BASE);
+	//UARTFIFODisable(UART5_BASE);
     UARTIntEnable(UART5_BASE, UART_INT_RX | UART_INT_TX);
 }
 
