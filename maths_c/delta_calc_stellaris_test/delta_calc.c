@@ -2,6 +2,8 @@
 
 #include "delta_calc.h"
 
+float vsqrtf_stellaris(float);
+
 inline float v3_dot(v3 a, v3 b) {
 	return a.x*b.x + a.y*b.y + a.z*b.z;
 }
@@ -11,11 +13,11 @@ inline float v3_dot_p(v3 *a, v3 *b) {
 }
 
 inline float v3_norm(v3 a) {
-	return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+	return vsqrtf_stellaris(a.x*a.x + a.y*a.y + a.z*a.z);
 }
 
 inline float v3_norm_p(v3 *a) {
-	return sqrt(a->x*a->x + a->y*a->y + a->z*a->z);
+	return vsqrtf_stellaris(a->x*a->x + a->y*a->y + a->z*a->z);
 }
 
 inline float v3_norm_squared(v3 a) {
@@ -111,7 +113,7 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	line_projection3d_p(&lp1, &lp2, &D1, &Dp1);
 	v3_diff_p(&D1, &Dp1, &D1mDp1);
 	float D1Dp1norm = v3_norm_squared_p(&D1mDp1);
-	bp = sqrt(params.b*params.b - D1Dp1norm);
+	bp = vsqrtf_stellaris(params.b*params.b - D1Dp1norm);
 
 	v3 Dp1u, Dp1ut, C1mDp1;
 	float C1mDp1_norm;
@@ -126,7 +128,7 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	float cc_a, cc_h;
 	v3 P1, buffer;
 	cc_a = (bp*bp - params.a*params.a + C1mDp1_norm*C1mDp1_norm) / (2 * C1mDp1_norm);
-	cc_h = sqrt(bp*bp - cc_a * cc_a);
+	cc_h = vsqrtf_stellaris(bp*bp - cc_a * cc_a);
 	v3_mult_p(&Dp1u, cc_a, &buffer);
 	v3_sum_p(&Dp1, &buffer, &P1);
 	v3_mult_p(&Dp1ut, cc_h, &buffer);
@@ -159,7 +161,7 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	line_projection3d_p(&lp1, &lp2, &D2, &Dp2);
 	v3_diff_p(&D2, &Dp2, &D2mDp2);
 	float D2Dp2norm = v3_norm_squared_p(&D2mDp2);
-	bp = sqrt(params.b*params.b - D2Dp2norm);
+	bp = vsqrtf_stellaris(params.b*params.b - D2Dp2norm);
 
 	v3 Dp2u, Dp2ut, C2mDp2;
 	float C2mDp2_norm;
@@ -173,7 +175,7 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 
 	v3 P2;
 	cc_a = (bp*bp - params.a*params.a + C2mDp2_norm*C2mDp2_norm) / (2 * C2mDp2_norm);
-	cc_h = sqrt(bp*bp - cc_a * cc_a);
+	cc_h = vsqrtf_stellaris(bp*bp - cc_a * cc_a);
 	v3_mult_p(&Dp2u, cc_a, &buffer);
 	v3_sum_p(&Dp2, &buffer, &P2);
 	v3_mult_p(&Dp2ut, cc_h, &buffer);
@@ -206,7 +208,7 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 	line_projection3d_p(&lp1, &lp2, &D3, &Dp3);
 	v3_diff_p(&D3, &Dp3, &D3mDp3);
 	float D3Dp3norm = v3_norm_squared_p(&D3mDp3);
-	bp = sqrt(params.b*params.b - D3Dp3norm);
+	bp = vsqrtf_stellaris(params.b*params.b - D3Dp3norm);
 
 	v3 Dp3u, Dp3ut, C3mDp3;
 	float C3mDp3_norm;
@@ -220,7 +222,7 @@ int delta_calc(delta_params params, float X, float Y, float Z, int inverted, flo
 
 	v3 P3;
 	cc_a = (bp*bp - params.a*params.a + C3mDp3_norm*C3mDp3_norm) / (2 * C3mDp3_norm);
-	cc_h = sqrt(bp*bp - cc_a * cc_a);
+	cc_h = vsqrtf_stellaris(bp*bp - cc_a * cc_a);
 	v3_mult_p(&Dp3u, cc_a, &buffer);
 	v3_sum_p(&Dp3, &buffer, &P3);
 	v3_mult_p(&Dp3ut, cc_h, &buffer);
