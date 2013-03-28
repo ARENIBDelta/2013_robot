@@ -7,10 +7,10 @@
 #include "driverlib/ssi.h"
 #include "driverlib/timer.h"
 #include "driverlib/interrupt.h"
-#include "math.h"
 
 #include "../platform/pwm.h"
 #include "control.h"
+#include "../tools/delta_calc.h"
 
 //0 => rien
 //1 => init origine
@@ -19,20 +19,30 @@ unsigned char control_state = 0;
 unsigned int control_t = 0;
 
 unsigned short qeis[6] = {0, 0, 0, 0, 0, 0};
-unsigned short qeis_p[6] = {0, 0, 0, 0, 0, 0};
+//static unsigned short qeis_p[6] = {0, 0, 0, 0, 0, 0};
 unsigned short errs[6] = {0, 0, 0, 0, 0, 0};
 
 int pwm_pulse_widths[6] = {0, 0, 0, 0, 0, 0};
-unsigned short goals[6] = {10075, 10075, 10075, 10075, 10075, 10075};
+unsigned short goals[6] = {10200, 10200, 10200, 10000, 10000, 10000};
 unsigned char dirs[6] = {1, 1, 1, 1, 1, 1};
 unsigned char enabled[6] = {1, 1, 1, 1, 1, 1};
+float errs_a[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 float errs_p[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 float integrals[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 float Kp[6] = {1, 1, 1, 1, 1, 1};
-float Ki[6] = {0.001, 0.001, 0.001, 0.01, 0.01, 0.01};
+float Ki[6] = {0.005, 0.005, 0.005, 0.01, 0.01, 0.01};
 float Kd[6] = {0.0, 0.0, 0.0, 42.0, 42.0, 42.0};
 
-float t;
+//unsigned short control_next_goals[6] = {10200, 10200, 10200, 10000, 10000, 10000};
+unsigned char control_reached = 0;
+
+void control_set_goal(unsigned short alpha, unsigned short beta, unsigned short gamma) {
+	control_reached = 0;
+
+	goals[0] = alpha;
+	goals[1] = beta;
+	goals[2] = gamma;
+}
 
 void control_init(void) {
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
@@ -56,34 +66,43 @@ void control_init(void) {
 }
 
 void control_start(void) {
+	control_reached = 0;
+	enabled[0] = 1;
+	enabled[1] = 1;
+	enabled[2] = 1;
 	control_state = 2;
 	TimerEnable(TIMER3_BASE, TIMER_A);
 }
 
 void control_stop(void) {
+	control_state = 0;
 	TimerDisable(TIMER3_BASE, TIMER_A);
 
-	set_pwm_width(WTIMER0_BASE, TIMER_B, 100 * 2, PULSE_100NS);
+	set_pwm_width(WTIMER0_BASE, TIMER_B, 99 * 4, PULSE_100NS);
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, GPIO_PIN_3);
 
-	set_pwm_width(WTIMER1_BASE, TIMER_A, 100 * 2, PULSE_100NS);
+	set_pwm_width(WTIMER1_BASE, TIMER_A, 99 * 4, PULSE_100NS);
 	GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3, GPIO_PIN_3);
 
-	set_pwm_width(WTIMER1_BASE, TIMER_B, 100 * 2, PULSE_100NS);
+	set_pwm_width(WTIMER1_BASE, TIMER_B, 99 * 4, PULSE_100NS);
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, GPIO_PIN_4);
+
+	enabled[0] = 0;
+	enabled[1] = 0;
+	enabled[2] = 0;
 }
 
 void control_go_to_origin(void) {
 	control_t = 0;
 	control_state = 1;
 
-	set_pwm_width(WTIMER0_BASE, TIMER_B, 100-15 * 2, PULSE_100NS);
+	set_pwm_width(WTIMER0_BASE, TIMER_B, (100-10) * 4, PULSE_100NS);
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, GPIO_PIN_3);
 
-	set_pwm_width(WTIMER1_BASE, TIMER_A, 100-15 * 2, PULSE_100NS);
+	set_pwm_width(WTIMER1_BASE, TIMER_A, (100-10) * 4, PULSE_100NS);
 	GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3, GPIO_PIN_3);
 
-	set_pwm_width(WTIMER1_BASE, TIMER_B, 100-15 * 2, PULSE_100NS);
+	set_pwm_width(WTIMER1_BASE, TIMER_B, (100-10) * 4, PULSE_100NS);
 	GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, GPIO_PIN_4);
 
 	TimerEnable(TIMER3_BASE, TIMER_A);
@@ -206,63 +225,64 @@ void qeis_spi_read(void) {
 	GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_2, GPIO_PIN_2);
 }
 
-#define M_PI 3.14159265358979323846
-
 void control(void) {
 	unsigned char i;
-	float err, derr_dt, out;
+	float derr_dt, out;
 
 	//Input
 	IntMasterDisable();
 	qeis_spi_read();
 	IntMasterEnable();
 
-	t += 2 * M_PI / 500;
-	goals[0] = 10000 + 75*cos(t);
-	goals[1] = 10000 + 75*cos(t);
-	goals[2] = 10000 + 75*cos(t);
-
 	//Calc
 	for(i=6;i--;) {
-		err = goals[i] - qeis[i];
-		derr_dt = err - errs_p[i];
-		integrals[i] = integrals[i] + Ki[i]*err;
+		errs_a[i] = goals[i] - qeis[i];
+		derr_dt = errs_a[i] - errs_p[i];
+		integrals[i] = integrals[i] + Ki[i]*errs_a[i];
 		integrals[i] = integrals[i] > 40 ? 40 : integrals[i];
 		integrals[i] = integrals[i] < -40 ? -40 : integrals[i];
 
-		out = (err * Kp[i]) + (derr_dt * Kd[i]) + (integrals[i]);
+		out = (errs_a[i] * Kp[i]) + (derr_dt * Kd[i]) + (integrals[i]);
 
 		dirs[i] = out >= 0 ? 0 : 1;
 		pwm_pulse_widths[i] = abs(out);
-		pwm_pulse_widths[i] = pwm_pulse_widths[i] > 30 ? 30 : pwm_pulse_widths[i];
+		pwm_pulse_widths[i] = pwm_pulse_widths[i] > 80 ? 80 : pwm_pulse_widths[i];
 
-		errs_p[i] = err;
+		errs_p[i] = errs_a[i];
 	}
 
 	//Output
 	if (enabled[0]) {
-		set_pwm_width(WTIMER0_BASE, TIMER_B, 100-pwm_pulse_widths[0] * 2, PULSE_100NS);
+		set_pwm_width(WTIMER0_BASE, TIMER_B, (100-pwm_pulse_widths[0]) * 4, PULSE_100NS);
 		GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, dirs[0] ? GPIO_PIN_3 : 0);
 	}
 	if (enabled[1]) {
-		set_pwm_width(WTIMER1_BASE, TIMER_A, 100-pwm_pulse_widths[1] * 2, PULSE_100NS);
+		set_pwm_width(WTIMER1_BASE, TIMER_A, (100-pwm_pulse_widths[1]) * 4, PULSE_100NS);
 		GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3, dirs[1] ? GPIO_PIN_3 : 0);
 	}
 	if (enabled[2]) {
-		set_pwm_width(WTIMER1_BASE, TIMER_B, 100-pwm_pulse_widths[2] * 2, PULSE_100NS);
+		set_pwm_width(WTIMER1_BASE, TIMER_B, (100-pwm_pulse_widths[2]) * 4, PULSE_100NS);
 		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4, dirs[2] ? GPIO_PIN_4 : 0);
 	}
 	if (enabled[3]) {
-		set_pwm_width(WTIMER5_BASE, TIMER_A, 100-pwm_pulse_widths[3] * 2, PULSE_100NS);
+		set_pwm_width(WTIMER5_BASE, TIMER_A, (100-pwm_pulse_widths[3]) * 4, PULSE_100NS);
 		GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_4, dirs[3] ? GPIO_PIN_4 : 0);
 	}
 	if (enabled[4]) {
-		set_pwm_width(WTIMER5_BASE, TIMER_B, 100-pwm_pulse_widths[4] * 2, PULSE_100NS);
+		set_pwm_width(WTIMER5_BASE, TIMER_B, (100-pwm_pulse_widths[4]) * 4, PULSE_100NS);
 		GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_6, dirs[4] ? GPIO_PIN_6 : 0);
 	}
 	if (enabled[5]) {
-		set_pwm_width(TIMER2_BASE,  TIMER_A, pwm_pulse_widths[5] * 2, PULSE_100NS);
+		set_pwm_width(TIMER2_BASE,  TIMER_A, pwm_pulse_widths[5] * 4, PULSE_100NS);
 		GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_2, dirs[5] ? GPIO_PIN_2 : 0);
+	}
+
+	unsigned char threshold = 25;
+	if (enabled[0] && enabled[1] && enabled[2]) {
+		if ((abs(errs_a[0]) < threshold) && (abs(errs_a[1]) < threshold) && (abs(errs_a[2]) < threshold)) {
+			control_reached = 1;
+			control_stop();
+		}
 	}
 }
 
@@ -270,12 +290,12 @@ void Timer3IntHandler(void) {
 	switch(control_state) {
 	case 1:
 		control_t++;
-		if (control_t == 2500) {
+		if (control_t == 5000) {
 			control_stop();
 			IntMasterDisable();
 			qeis_reset();
 			IntMasterEnable();
-			control_start();
+			control_reached = 1;
 		}
 		break;
 	case 2:

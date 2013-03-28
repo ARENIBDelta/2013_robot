@@ -35,7 +35,7 @@ void set_pwm_width(uint32_t timer_base, uint32_t timer, uint32_t pulse_duration,
 }
 
 void config_pwms(void) {
-	uint32_t frequency = 50000;
+	uint32_t frequency = 25000;
 
 	uint32_t period1 = SysCtlClockGet() / frequency;
 	uint16_t extender1 = 0;
