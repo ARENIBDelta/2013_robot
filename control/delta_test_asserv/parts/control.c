@@ -45,6 +45,7 @@ unsigned char qeis_to_motor[6] = {4,2,1,5,6,3};
 //unsigned short control_next_goals[6] = {10200, 10200, 10200, 10000, 10000, 10000};
 unsigned char control_reached_1 = 0;
 unsigned char control_reached_2 = 0;
+unsigned char control_event = 0;
 
 void motor_set_pwm(unsigned char motor, unsigned char duty_cycle, unsigned char dir) {
 	motor = angles_to_motor[motor] - 1;
@@ -407,7 +408,7 @@ void Timer3IntHandler(void) {
 	}
 
 	if (control_state_1 == 2 || control_state_2 == 2) {
-		control();
+		control_event = 1;
 	}
 
     TimerIntClear(TIMER3_BASE, TIMER_TIMA_TIMEOUT);
