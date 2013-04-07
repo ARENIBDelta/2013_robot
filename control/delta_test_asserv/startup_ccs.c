@@ -31,6 +31,8 @@ extern unsigned long __STACK_TOP;
 extern void Timer3IntHandler(void);
 extern void UARTPCControlIntHandler(void);
 
+extern void rien(void);
+
 //*****************************************************************************
 //
 // The vector table.  Note that the proper constructs must be placed on this to
@@ -119,7 +121,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // SSI3 Rx and Tx
     IntDefaultHandler,                      // UART3 Rx and Tx
     IntDefaultHandler,                      // UART4 Rx and Tx
-    IntDefaultHandler,                        // UART5 Rx and Tx
+    rien,                        // UART5 Rx and Tx
     IntDefaultHandler,                      // UART6 Rx and Tx
     IntDefaultHandler,                      // UART7 Rx and Tx
     0,                                      // Reserved

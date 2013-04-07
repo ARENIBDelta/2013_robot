@@ -12,6 +12,13 @@
 const char * const g_pcHex = "0123456789abcdef";
 unsigned long g_ulBase = UART5_BASE;
 
+void rien(void) {
+	  unsigned long ulStatus;
+	  ulStatus = UARTIntStatus(UART5_BASE, 1);
+	  UARTIntClear(UART5_BASE, ulStatus);
+	return;
+}
+
 //void configure_uart_bt(void) {
 //	g_ulBase = INT_UART0;
 //

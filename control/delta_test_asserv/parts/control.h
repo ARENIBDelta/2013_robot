@@ -8,13 +8,19 @@
 #ifndef CONTROL_H_
 #define CONTROL_H_
 
-#define CONTROL_TIMER_FREQ 1000
+#define CONTROL_TIMER_FREQ 100
 
 void control_init(void);
-void control_start(void);
-void control_stop(void);
-void control_go_to_origin(void);
-void control_set_goal(unsigned short alpha, unsigned short beta, unsigned short gamma);
+void control_enable_1(void);
+void control_enable_2(void);
+void control_disable_1(void);
+void control_disable_2(void);
+void control_go_to_origin_1(void);
+void control_go_to_origin_2(void);
+void control_set_goal_1(unsigned short alpha, unsigned short beta, unsigned short gamma);
+void control_set_goal_2(unsigned short alpha, unsigned short beta, unsigned short gamma);
+void control_stop_1(void);
+void control_stop_2(void);
 
 void control(void);
 
