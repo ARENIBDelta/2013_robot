@@ -31,15 +31,12 @@ unsigned char enabled[6] = {0,0,0,0,0,0};
 float errs_a[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 float errs_p[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 float integrals[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-float Kp[6] = {1.75, 1.75, 1.75, 1, 1, 1};
-float Ki[6] = {1*0.007, 1*0.007, 1*0.007, 0.007, 0.007, 0.007};
+float Kp[6] = {2*1.75, 2*1.75, 2*1.75, 2*1.75, 2*1.75, 2*1.75};
+float Ki[6] = {1*0.035, 1*0.035, 1*0.035, 0.035, 0.035, 0.035};
 float Kd[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 //Correspondance moteurs et quadratures
-//unsigned char qeis_to_motor[6] = {2,5,4,1,3,6};
-//unsigned char angles_to_motor[6] = {4,2,1,5,6,3};
 unsigned char angles_to_motor[6] = {2,5,4,1,3,6};
-//unsigned char angles_to_motor[6] = {3,0,4,2,1,5};
 unsigned char qeis_to_motor[6] = {4,2,1,5,6,3};
 
 //unsigned short control_next_goals[6] = {10200, 10200, 10200, 10000, 10000, 10000};
@@ -130,8 +127,8 @@ void control_init(void) {
 
 void control_enable_1(void) {
 	control_reached_1 = 0;
-	enabled[0] = 0;
-	enabled[1] = 0;
+	enabled[0] = 1;
+	enabled[1] = 1;
 	enabled[2] = 1;
 	control_state_1 = 2;
 	TimerEnable(TIMER3_BASE, TIMER_A);
@@ -175,9 +172,9 @@ void control_go_to_origin_1(void) {
 	control_t_1 = 0;
 	control_state_1 = 1;
 
-	motor_set_pwm(0, 7, 1);
-	motor_set_pwm(1, 7, 1);
-	motor_set_pwm(2, 7, 1);
+	motor_set_pwm(0, 15, 1);
+	motor_set_pwm(1, 15, 1);
+	motor_set_pwm(2, 15, 1);
 	TimerEnable(TIMER3_BASE, TIMER_A);
 }
 
@@ -185,9 +182,9 @@ void control_go_to_origin_2(void) {
 	control_t_2 = 0;
 	control_state_2 = 1;
 
-	motor_set_pwm(3, 7, 1);
-	motor_set_pwm(4, 7, 1);
-	motor_set_pwm(5, 7, 1);
+	motor_set_pwm(3, 15, 1);
+	motor_set_pwm(4, 15, 1);
+	motor_set_pwm(5, 15, 1);
 	TimerEnable(TIMER3_BASE, TIMER_A);
 }
 
@@ -357,7 +354,7 @@ void control(void) {
 		dirs[i] = out >= 0 ? 0 : 1;
 		pwm_pulse_widths[i] = abs(out);
 		pwm_pulse_widths[i] = pwm_pulse_widths[i] < 7 ? 7 : pwm_pulse_widths[i];
-		pwm_pulse_widths[i] = pwm_pulse_widths[i] > 50 ? 50 : pwm_pulse_widths[i];
+		pwm_pulse_widths[i] = pwm_pulse_widths[i] > 99 ? 99 : pwm_pulse_widths[i];
 
 		errs_p[i] = errs_a[i];
 	}
@@ -388,7 +385,7 @@ void control(void) {
 void Timer3IntHandler(void) {
 	if (control_state_1 == 1) {
 		control_t_1++;
-		if (control_t_1 == 500) {
+		if (control_t_1 == 600) {
 			control_stop_1();
 			IntMasterDisable();
 			qeis_reset();
@@ -398,7 +395,7 @@ void Timer3IntHandler(void) {
 	}
 	if (control_state_2 == 1) {
 		control_t_2++;
-		if (control_t_2 == 500) {
+		if (control_t_2 == 600) {
 			control_stop_2();
 			IntMasterDisable();
 			qeis_reset();

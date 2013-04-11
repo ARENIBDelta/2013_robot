@@ -1,27 +1,3 @@
-/*
- * Test d'asservissement d'un moteurs CC
- * 2013-03 Erwan Martin <erwan@martin.tl>
- *
- * Ce montage utilise un MSP-EXP430G2 pour récupérer la valeur des
- * codeurs, et un driver H pour commander le moteur.
- * Ne pas oublier de mettre des résistances de tirage de 10k environ
- * pour charger les sorties codeurs du moteur.
- *
- * Pineout SPI:
- * EK-LM4F120X  -> MSP-EXP430G2
- * PD0 (SSICLK) -> P1.4 (UCA0CLK)
- * PD2 (SSIRX)  -> P1.1 (UCA0SOMI)
- * PD3 (SSITX)  -> P1.2 (UCA0SIMO)
- * PE1 (PE1)    -> P1.5 (P1.5)
- * PE2 (PE2)    -> P2.0 (P2.0)
- * PE3 (PE3)    -> P2.1 (P2.1)
- *
- * Pineout H:
- * VCC          -> VCC Codeurs
- * PB4          -> PWM Moteur 1
- * PE2          -> Dir Moteur 1
- */
-
 #define PART_LM4F120B2QR
 #include <inc/hw_types.h>
 #include "driverlib/fpu.h"
@@ -56,15 +32,15 @@ void calc_control_input_1(float X, float Y, float Z, unsigned short *alpha_a, un
 	delta_params params;
 	params.a = 70;
 	params.b = 225;
-	params.c = 50;
-	params.d = 50;
+	params.c = 87;
+	params.d = 54;
 	float alpha, beta, gamma;
 
 	//Ne pas oublier de vérifier la taille de la stack avant d'utiliser ça
 	delta_calc(params, X, Y, Z, 0, &alpha, &beta, &gamma);
-	*alpha_a = 10245 - ((alpha / M_PI * 180) )/0.108; //90/(10546-9719)
-	*beta_a = 10245 - ((beta / M_PI * 180) )/0.108;
-	*gamma_a = 10245 - ((gamma / M_PI * 180) )/0.108;
+	*alpha_a = 10092 - ((alpha / M_PI * 180) - 180)/0.1249;
+	*beta_a = 10092 - ((beta / M_PI * 180) - 180)/0.1249;
+	*gamma_a = 10092 - ((gamma / M_PI * 180) - 180)/0.1249;
 
 	*alpha_a = *alpha_a > 10700 ? 10700 : *alpha_a;
 	*alpha_a = *alpha_a < 9800 ? 9800 : *alpha_a;
@@ -84,9 +60,9 @@ void calc_control_input_2(float X, float Y, float Z, unsigned short *alpha_a, un
 
 	//Ne pas oublier de vérifier la taille de la stack avant d'utiliser ça
 	delta_calc(params, X, Y, Z, 1, &alpha, &beta, &gamma);
-	*alpha_a = 10245 - ((alpha / M_PI * 180) )/0.108; //90/(10546-9719)
-	*beta_a = 10245 - ((beta / M_PI * 180) )/0.108;
-	*gamma_a = 10245 - ((gamma / M_PI * 180) )/0.108;
+	*alpha_a = 10135 + ((alpha / M_PI * 180) )/0.1249;
+	*beta_a = 10135 + ((beta / M_PI * 180) )/0.1249;
+	*gamma_a = 10135 + ((gamma / M_PI * 180) )/0.1249;
 
 	*alpha_a = *alpha_a > 10700 ? 10700 : *alpha_a;
 	*alpha_a = *alpha_a < 9800 ? 9800 : *alpha_a;
@@ -94,6 +70,48 @@ void calc_control_input_2(float X, float Y, float Z, unsigned short *alpha_a, un
 	*beta_a = *beta_a < 9800 ? 9800 : *beta_a;
 	*gamma_a = *gamma_a > 10700 ? 10700 : *gamma_a;
 	*gamma_a = *gamma_a < 9800 ? 9800 : *gamma_a;
+}
+
+inline void control_do_lines(
+		float X1_from, float X1_to,
+		float Y1_from, float Y1_to,
+		float Z1_from, float Z1_to,
+		float X2_from, float X2_to,
+		float Y2_from, float Y2_to,
+		float Z2_from, float Z2_to
+) {
+	unsigned short t;
+	unsigned short alpha_a_1, beta_a_1, gamma_a_1;
+	unsigned short alpha_a_2, beta_a_2, gamma_a_2;
+
+#define STEPS 50
+
+	float incr_X1 = (X1_to - X1_from) / STEPS;
+	float incr_Y1 = (Y1_to - Y1_from) / STEPS;
+	float incr_Z1 = (Z1_to - Z1_from) / STEPS;
+	float incr_X2 = (X2_to - X2_from) / STEPS;
+	float incr_Y2 = (Y2_to - Y2_from) / STEPS;
+	float incr_Z2 = (Z2_to - Z2_from) / STEPS;
+
+	for (t=0; t<=STEPS; t++) {
+		//Calcul des points suivants
+		calc_control_input_1(
+				X1_from+t*incr_X1, Y1_from+t*incr_Y1, Z1_from+t*incr_Z1,
+				&alpha_a_1, &beta_a_1, &gamma_a_1
+		);
+		calc_control_input_2(
+				X2_from+t*incr_X2, Y2_from+t*incr_Y2, Z2_from+t*incr_Z2,
+				&alpha_a_2, &beta_a_2, &gamma_a_2
+		);
+
+		//Attente interruption asserv
+		while(!control_event) {SysCtlDelay(1000);} control_event = 0;
+
+		//Commande
+		control_set_goal_1(alpha_a_1, beta_a_1, gamma_a_1);
+		control_set_goal_2(alpha_a_2, beta_a_2, gamma_a_2);
+		control();
+	}
 }
 
 char vvvvvvv = 0;
@@ -171,43 +189,142 @@ void main(void) {
 //    control_enable_1();
 
     //Init quadrature
+    control_go_to_origin_1();
     control_go_to_origin_2();
-	while(!control_reached_2) {
+	while(!control_reached_1 || !control_reached_2) {
 		SysCtlDelay(1000);
 	}
+	control_disable_1();
+	control_stop_1();
 	control_disable_2();
 	control_stop_2();
 
+	control_enable_1();
     control_enable_2();
 
-	float t = 0;
-	//char pi = 0;
-	unsigned short alpha_a, beta_a, gamma_a;
+//    while(1) {
+//		unsigned short alpha_a_1, beta_a_1, gamma_a_1;
+//		unsigned short alpha_a_2, beta_a_2, gamma_a_2;
+//		calc_control_input_1(
+//				0, 0, 230,
+//				&alpha_a_1, &beta_a_1, &gamma_a_1
+//		);
+//		calc_control_input_2(
+//				0, 0, 230,
+//				&alpha_a_2, &beta_a_2, &gamma_a_2
+//		);
+//		while(!control_event) {SysCtlDelay(1000);} control_event = 0;
+//
+//		control_set_goal_1(alpha_a_1, beta_a_1, gamma_a_1);
+//		control_set_goal_2(alpha_a_2, beta_a_2, gamma_a_2);
+//		control();
+//    }
+
+//    unsigned short v[6] = {10200, 10200, 10200, 10200, 10200, 10200};
+//
+//    while(1) {
+//		control_set_goal_1(v[0], v[1], v[2]);
+//		control_set_goal_2(v[3], v[4], v[5]);
+//		control();
+//    	while(!control_event) {
+//			SysCtlDelay(1000);
+//		}
+//		control_event = 0;
+//    }
+
+	control_do_lines(
+		0, 0,
+		0, 0,
+		175, 200,
+		0, 0,
+		0, 0,
+		175, 200
+	);
+
+	float angle = 90 / 180 * M_PI;
+	float step = 25;
+	float dir_x = cos(angle);
+	float dir_y = sin(angle);
+
+	control_do_lines(
+		0, 0,
+		0, 0,
+		200, 170,
+		0, 0,
+		0, 0,
+		200, 200
+	);
+
+	control_do_lines(
+		0, 0,
+		0, 0,
+		170, 170,
+		0, -step*dir_x,
+		0, -step*dir_y,
+		200, 200
+	);
+
 	while(1) {
-		float X, Y, Z;
+		control_do_lines(
+			0, 0,
+			0, 0,
+			170, 200,
+			-step*dir_x, -step*dir_x,
+			-step*dir_y, -step*dir_y,
+			200, 200
+		);
 
-		//pi++;
-		//pi = pi % 175;
+		control_do_lines(
+			0, 0,
+			0, 0,
+			200, 200,
+			-step*dir_x, -step*dir_x,
+			-step*dir_y, -step*dir_y,
+			200, 180
+		);
 
-		//X = points_x[pi];
-		//Y = points_y[pi];
-		//Z = 200;
+		control_do_lines(
+			0, 0,
+			0, 0,
+			200, 200,
+			-step*dir_x, step*dir_x,
+			-step*dir_y, step*dir_y,
+			180, 180
+		);
 
-		t += 2 * M_PI / 1000;
-		X = 35*cos(t);
-		Y = 35*sin(t);
-		Z = 200;
-		//Z = 200 + 20 * cos(t);
+		control_do_lines(
+			0, 0,
+			0, 0,
+			200, 200,
+			step*dir_x, step*dir_x,
+			step*dir_y, step*dir_y,
+			180, 200
+		);
 
-		calc_control_input_2(X, Y, Z, &alpha_a, &beta_a, &gamma_a);
+		control_do_lines(
+			0, 0,
+			0, 0,
+			200, 170,
+			step*dir_x, step*dir_x,
+			step*dir_y, step*dir_y,
+			200, 200
+		);
 
-		while(!control_event) {
-			SysCtlDelay(1000);
-		}
-		control_event = 0;
+		control_do_lines(
+			0, 0,
+			0, 0,
+			170, 170,
+			step*dir_x, -step*dir_x,
+			step*dir_y, -step*dir_y,
+			200, 200
+		);
 
-		control_set_goal_2(alpha_a, beta_a, gamma_a);
-		control();
+//		while(1) {
+//			while(!control_event) {SysCtlDelay(1000);} control_event = 0;
+//			control();
+//		}
+
+		//control_set_goal_2(alpha_a_2, beta_a_2, gamma_a_2);
 
 	}
 
