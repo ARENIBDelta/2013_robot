@@ -84,7 +84,7 @@ inline void control_do_lines(
 	unsigned short alpha_a_1, beta_a_1, gamma_a_1;
 	unsigned short alpha_a_2, beta_a_2, gamma_a_2;
 
-#define STEPS 50
+#define STEPS 250
 
 	float incr_X1 = (X1_to - X1_from) / STEPS;
 	float incr_Y1 = (Y1_to - Y1_from) / STEPS;
@@ -232,91 +232,88 @@ void main(void) {
 //		control_event = 0;
 //    }
 
+	float base_z = 215;
+	float dz = 30;
+
 	control_do_lines(
 		0, 0,
 		0, 0,
-		175, 200,
+		175, base_z,
 		0, 0,
 		0, 0,
-		175, 200
+		175, base_z
 	);
 
-	float angle = 90 / 180 * M_PI;
-	float step = 25;
+	float angle = 270 / 180 * M_PI;
+	float step = 35;
 	float dir_x = cos(angle);
 	float dir_y = sin(angle);
 
-	control_do_lines(
-		0, 0,
-		0, 0,
-		200, 170,
-		0, 0,
-		0, 0,
-		200, 200
-	);
+	float lx = dir_x*step;
+	float ly = dir_y*step;
 
 	control_do_lines(
-		0, 0,
-		0, 0,
-		170, 170,
-		0, -step*dir_x,
-		0, -step*dir_y,
-		200, 200
+		0, -0.625*lx,
+		0, -0.625*ly,
+		base_z, base_z,
+		0, 0.625*lx,
+		0, 0.625*ly,
+		base_z, base_z
 	);
 
 	while(1) {
 		control_do_lines(
-			0, 0,
-			0, 0,
-			170, 200,
-			-step*dir_x, -step*dir_x,
-			-step*dir_y, -step*dir_y,
-			200, 200
+			-0.625*lx, -lx,
+			-0.625*ly, -ly,
+			base_z, base_z-dz,
+			0.625*lx, 0.25*lx,
+			0.625*ly, 0.25*ly,
+			base_z, base_z
 		);
 
 		control_do_lines(
-			0, 0,
-			0, 0,
-			200, 200,
-			-step*dir_x, -step*dir_x,
-			-step*dir_y, -step*dir_y,
-			200, 180
+			-lx, lx,
+			-ly, ly,
+			base_z-dz, base_z-dz,
+			0.25*lx, -0.25*lx,
+			0.25*ly, -0.25*ly,
+			base_z, base_z
 		);
 
 		control_do_lines(
-			0, 0,
-			0, 0,
-			200, 200,
-			-step*dir_x, step*dir_x,
-			-step*dir_y, step*dir_y,
-			180, 180
+			lx, 0.625*lx,
+			ly, 0.625*ly,
+			base_z-dz, base_z,
+			-0.25*lx, -0.625*lx,
+			-0.25*ly, -0.625*ly,
+			base_z, base_z
 		);
 
 		control_do_lines(
-			0, 0,
-			0, 0,
-			200, 200,
-			step*dir_x, step*dir_x,
-			step*dir_y, step*dir_y,
-			180, 200
+			0.625*lx, 0.25*lx,
+			0.625*ly, 0.25*ly,
+			base_z, base_z,
+			-0.625*lx, -lx,
+			-0.625*ly, -ly,
+			base_z, base_z-dz
 		);
 
 		control_do_lines(
-			0, 0,
-			0, 0,
-			200, 170,
-			step*dir_x, step*dir_x,
-			step*dir_y, step*dir_y,
-			200, 200
+			0.25*lx, -0.25*lx,
+			0.25*ly, -0.25*ly,
+			base_z, base_z,
+			-lx, lx,
+			-ly, ly,
+			base_z-dz, base_z-dz
 		);
 
 		control_do_lines(
-			0, 0,
-			0, 0,
-			170, 170,
-			step*dir_x, -step*dir_x,
-			step*dir_y, -step*dir_y,
-			200, 200
+			-0.25*lx, -0.625*lx,
+			-0.25*ly, -0.625*ly,
+			base_z, base_z,
+			lx, 0.625*lx,
+			ly, 0.625*ly,
+			base_z-dz, base_z
 		);
 
 //		while(1) {
