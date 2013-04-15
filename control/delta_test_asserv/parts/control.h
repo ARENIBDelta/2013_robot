@@ -15,6 +15,7 @@ void control_enable_1(void);
 void control_enable_2(void);
 void control_disable_1(void);
 void control_disable_2(void);
+void motor_set_pwm_limits_all(char duty_cycle_max);
 void control_go_to_origin_1(void);
 void control_go_to_origin_2(void);
 void control_set_goal_1(unsigned short alpha, unsigned short beta, unsigned short gamma);

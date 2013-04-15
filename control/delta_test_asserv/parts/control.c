@@ -31,9 +31,10 @@ unsigned char enabled[6] = {0,0,0,0,0,0};
 float errs_a[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 float errs_p[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 float integrals[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-float Kp[6] = {1.75, 1.75, 1.75, 1.75, 1.75, 1.75};
+float Kp[6] = {2*1.75, 2*1.75, 2*1.75, 2*1.75, 2*1.75, 2*1.75};
 float Ki[6] = {1*0.035, 1*0.035, 1*0.035, 0.035, 0.035, 0.035};
 float Kd[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+unsigned char pwm_duty_limits[6] = {40,40,40,40,40,40};
 
 //Correspondance moteurs et quadratures
 unsigned char angles_to_motor[6] = {2,5,4,1,3,6};
@@ -72,6 +73,11 @@ void motor_set_pwm(unsigned char motor, unsigned char duty_cycle, unsigned char 
 		GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_2, dir ? GPIO_PIN_2 : 0);
 		break;
 	}
+}
+
+void motor_set_pwm_limits_all(char duty_cycle_max) {
+	  pwm_duty_limits[0] = pwm_duty_limits[1] = pwm_duty_limits[2]
+	= pwm_duty_limits[3] = pwm_duty_limits[4] = pwm_duty_limits[5] = duty_cycle_max;
 }
 
 void control_set_goal_1(unsigned short alpha, unsigned short beta, unsigned short gamma) {
@@ -354,7 +360,7 @@ void control(void) {
 		dirs[i] = out >= 0 ? 0 : 1;
 		pwm_pulse_widths[i] = abs(out);
 		pwm_pulse_widths[i] = pwm_pulse_widths[i] < 7 ? 7 : pwm_pulse_widths[i];
-		pwm_pulse_widths[i] = pwm_pulse_widths[i] > 99 ? 99 : pwm_pulse_widths[i];
+		pwm_pulse_widths[i] = pwm_pulse_widths[i] > pwm_duty_limits[i] ? pwm_duty_limits[i] : pwm_pulse_widths[i];
 
 		errs_p[i] = errs_a[i];
 	}
@@ -385,7 +391,7 @@ void control(void) {
 void Timer3IntHandler(void) {
 	if (control_state_1 == 1) {
 		control_t_1++;
-		if (control_t_1 == 600) {
+		if (control_t_1 == 400) {
 			control_stop_1();
 			IntMasterDisable();
 			qeis_reset();
@@ -395,7 +401,7 @@ void Timer3IntHandler(void) {
 	}
 	if (control_state_2 == 1) {
 		control_t_2++;
-		if (control_t_2 == 600) {
+		if (control_t_2 == 400) {
 			control_stop_2();
 			IntMasterDisable();
 			qeis_reset();

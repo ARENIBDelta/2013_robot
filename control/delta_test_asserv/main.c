@@ -59,7 +59,7 @@ void calc_control_input_2(float X, float Y, float Z, unsigned short *alpha_a, un
 	float alpha, beta, gamma;
 
 	//Ne pas oublier de vérifier la taille de la stack avant d'utiliser ça
-	delta_calc(params, X, Y, Z, 1, &alpha, &beta, &gamma);
+	delta_calc(params, X, -Y, Z, 1, &alpha, &beta, &gamma);
 	*alpha_a = 10135 + ((alpha / M_PI * 180) )/0.1249;
 	*beta_a = 10135 + ((beta / M_PI * 180) )/0.1249;
 	*gamma_a = 10135 + ((gamma / M_PI * 180) )/0.1249;
@@ -72,19 +72,20 @@ void calc_control_input_2(float X, float Y, float Z, unsigned short *alpha_a, un
 	*gamma_a = *gamma_a < 9800 ? 9800 : *gamma_a;
 }
 
+#define STEPS 76
+
 inline void control_do_lines(
 		float X1_from, float X1_to,
 		float Y1_from, float Y1_to,
 		float Z1_from, float Z1_to,
 		float X2_from, float X2_to,
 		float Y2_from, float Y2_to,
-		float Z2_from, float Z2_to
+		float Z2_from, float Z2_to,
+		short steps
 ) {
 	unsigned short t;
 	unsigned short alpha_a_1, beta_a_1, gamma_a_1;
 	unsigned short alpha_a_2, beta_a_2, gamma_a_2;
-
-#define STEPS 250
 
 	float incr_X1 = (X1_to - X1_from) / STEPS;
 	float incr_Y1 = (Y1_to - Y1_from) / STEPS;
@@ -93,7 +94,7 @@ inline void control_do_lines(
 	float incr_Y2 = (Y2_to - Y2_from) / STEPS;
 	float incr_Z2 = (Z2_to - Z2_from) / STEPS;
 
-	for (t=0; t<=STEPS; t++) {
+	for (t=1; t<=steps; t++) {
 		//Calcul des points suivants
 		calc_control_input_1(
 				X1_from+t*incr_X1, Y1_from+t*incr_Y1, Z1_from+t*incr_Z1,
@@ -114,6 +115,189 @@ inline void control_do_lines(
 	}
 }
 
+float base_z = 200;
+float dz = 30;
+
+void control_start_steps(float angle, unsigned char length, unsigned char step_down) {
+	angle = angle * M_PI  / 180;
+	float dir_x = cos(angle);
+	float dir_y = sin(angle);
+
+	float lx = dir_x*length;
+	float ly = dir_y*length;
+
+	if (step_down) {
+		control_do_lines(
+			0, 0,
+			0, 0,
+			base_z, base_z-dz,
+			0, 0,
+			0, 0,
+			base_z, base_z,
+			STEPS
+		);
+	}
+
+	control_do_lines(
+		0, -0.625*lx,
+		0, -0.625*ly,
+		base_z-dz, base_z-dz,
+		0, 0.625*lx,
+		0, 0.625*ly,
+		base_z, base_z,
+		STEPS
+	);
+
+	control_do_lines(
+		-0.625*lx, -0.625*lx,
+		-0.625*ly, -0.625*ly,
+		base_z-dz, base_z,
+		0.625*lx, 0.625*lx,
+		0.625*ly, 0.625*ly,
+		base_z, base_z,
+		STEPS
+	);
+}
+
+void control_do_step(float angle_src, float angle_dst, char length) {
+	angle_src = angle_src * M_PI / 180;
+	angle_dst = angle_dst * M_PI / 180;
+	float dir_x_src = cos(angle_src);
+	float dir_y_src = sin(angle_src);
+	float dir_x_dst = cos(angle_dst);
+	float dir_y_dst = sin(angle_dst);
+
+	float lx = dir_x_src*length;
+	float ly = dir_y_src*length;
+
+	float lx2 = dir_x_dst*length;
+	float ly2 = dir_y_dst*length;
+
+	control_do_lines(
+		-0.625*lx, -lx,
+		-0.625*ly, -ly,
+		base_z, base_z-dz,
+		0.625*lx, 0.25*lx,
+		0.625*ly, 0.25*ly,
+		base_z, base_z,
+		STEPS
+	);
+
+	control_do_lines(
+		-lx, lx,
+		-ly, ly,
+		base_z-dz, base_z-dz,
+		0.25*lx, -0.25*lx,
+		0.25*ly, -0.25*ly,
+		base_z, base_z,
+		STEPS
+	);
+
+	control_do_lines(
+		lx, 0.625*lx,
+		ly, 0.625*ly,
+		base_z-dz, base_z,
+		-0.25*lx, -0.625*lx,
+		-0.25*ly, -0.625*ly,
+		base_z, base_z,
+		STEPS
+	);
+
+	control_do_lines(
+		0.625*lx, 0.25*lx,
+		0.625*ly, 0.25*ly,
+		base_z, base_z,
+		-0.625*lx, -lx,
+		-0.625*ly, -ly,
+		base_z, base_z-dz,
+		STEPS
+	);
+
+	if (angle_src != angle_dst) {
+		control_do_lines(
+			0.25*lx, 0,
+			0.25*ly, 0,
+			base_z, base_z,
+			-lx, 0,
+			-ly, 0,
+			base_z-dz, base_z-dz,
+			STEPS
+		);
+
+		control_do_lines(
+			0, -0.25*lx2,
+			0, -0.25*ly2,
+			base_z, base_z,
+			0, lx2,
+			0, ly2,
+			base_z-dz, base_z-dz,
+			STEPS
+		);
+	}
+	else {
+		control_do_lines(
+			0.25*lx, -0.25*lx2,
+			0.25*ly, -0.25*ly2,
+			base_z, base_z,
+			-lx, lx2,
+			-ly, ly2,
+			base_z-dz, base_z-dz,
+			STEPS
+		);
+	}
+
+	control_do_lines(
+		-0.25*lx2, -0.625*lx2,
+		-0.25*ly2, -0.625*ly2,
+		base_z, base_z,
+		lx2, 0.625*lx2,
+		ly2, 0.625*ly2,
+		base_z-dz, base_z,
+		STEPS
+	);
+}
+
+void control_stop_steps(float angle, unsigned char length, unsigned char step_down) {
+	angle = angle * M_PI  / 180;
+	float dir_x = cos(angle);
+	float dir_y = sin(angle);
+
+	float lx = dir_x*length;
+	float ly = dir_y*length;
+
+	control_do_lines(
+		-0.625*lx, -0.625*lx,
+		-0.625*ly, -0.625*ly,
+		base_z, base_z-dz,
+		0.625*lx, 0.625*lx,
+		0.625*ly, 0.625*ly,
+		base_z, base_z,
+		STEPS
+	);
+
+	control_do_lines(
+		-0.625*lx, 0,
+		-0.625*ly, 0,
+		base_z-dz, base_z-dz,
+		0.625*lx, 0,
+		0.625*ly, 0,
+		base_z, base_z,
+		STEPS
+	);
+
+	if (step_down) {
+		control_do_lines(
+			0, 0,
+			0, 0,
+			base_z-dz, base_z,
+			0, 0,
+			0, 0,
+			base_z, base_z,
+			STEPS
+		);
+	}
+}
+
 char vvvvvvv = 0;
 void main(void) {
 	//Config sys
@@ -126,6 +310,7 @@ void main(void) {
     //configure_uart_bt();
 
     config_pwms();
+    motor_set_pwm_limits_all(40);
     control_init();
 
 //	unsigned char dir = 1;
@@ -199,6 +384,7 @@ void main(void) {
 	control_disable_2();
 	control_stop_2();
 
+	motor_set_pwm_limits_all(99);
 	control_enable_1();
     control_enable_2();
 
@@ -206,11 +392,11 @@ void main(void) {
 //		unsigned short alpha_a_1, beta_a_1, gamma_a_1;
 //		unsigned short alpha_a_2, beta_a_2, gamma_a_2;
 //		calc_control_input_1(
-//				0, 0, 230,
+//				0, 0, 200,
 //				&alpha_a_1, &beta_a_1, &gamma_a_1
 //		);
 //		calc_control_input_2(
-//				0, 0, 230,
+//				0, 0, 200,
 //				&alpha_a_2, &beta_a_2, &gamma_a_2
 //		);
 //		while(!control_event) {SysCtlDelay(1000);} control_event = 0;
@@ -232,89 +418,56 @@ void main(void) {
 //		control_event = 0;
 //    }
 
-	float base_z = 215;
-	float dz = 30;
+//	control_do_lines(
+//		0, 0,
+//		0, 0,
+//		200, 200,
+//		0, -10,
+//		0, -10,
+//		200, 200
+//	);
+//
+//	while(1) {
+//		control_do_lines(
+//			0, -30,
+//			0, -30,
+//			base_z, base_z,
+//			-10, -40,
+//			-10, -40,
+//			200, 200
+//		);
+//
+//		control_do_lines(
+//			-30, 0,
+//			-30, 0,
+//			base_z, base_z,
+//			-40, -10,
+//			-40, -10,
+//			200, 200
+//		);
+//	}
 
 	control_do_lines(
 		0, 0,
 		0, 0,
-		175, base_z,
+		170, base_z-dz,
 		0, 0,
 		0, 0,
-		175, base_z
+		170, base_z,
+		STEPS
 	);
 
-	float angle = 270 / 180 * M_PI;
-	float step = 35;
-	float dir_x = cos(angle);
-	float dir_y = sin(angle);
 
-	float lx = dir_x*step;
-	float ly = dir_y*step;
-
-	control_do_lines(
-		0, -0.625*lx,
-		0, -0.625*ly,
-		base_z, base_z,
-		0, 0.625*lx,
-		0, 0.625*ly,
-		base_z, base_z
-	);
-
+	control_start_steps(0, 30, 0);
 	while(1) {
-		control_do_lines(
-			-0.625*lx, -lx,
-			-0.625*ly, -ly,
-			base_z, base_z-dz,
-			0.625*lx, 0.25*lx,
-			0.625*ly, 0.25*ly,
-			base_z, base_z
-		);
-
-		control_do_lines(
-			-lx, lx,
-			-ly, ly,
-			base_z-dz, base_z-dz,
-			0.25*lx, -0.25*lx,
-			0.25*ly, -0.25*ly,
-			base_z, base_z
-		);
-
-		control_do_lines(
-			lx, 0.625*lx,
-			ly, 0.625*ly,
-			base_z-dz, base_z,
-			-0.25*lx, -0.625*lx,
-			-0.25*ly, -0.625*ly,
-			base_z, base_z
-		);
-
-		control_do_lines(
-			0.625*lx, 0.25*lx,
-			0.625*ly, 0.25*ly,
-			base_z, base_z,
-			-0.625*lx, -lx,
-			-0.625*ly, -ly,
-			base_z, base_z-dz
-		);
-
-		control_do_lines(
-			0.25*lx, -0.25*lx,
-			0.25*ly, -0.25*ly,
-			base_z, base_z,
-			-lx, lx,
-			-ly, ly,
-			base_z-dz, base_z-dz
-		);
-
-		control_do_lines(
-			-0.25*lx, -0.625*lx,
-			-0.25*ly, -0.625*ly,
-			base_z, base_z,
-			lx, 0.625*lx,
-			ly, 0.625*ly,
-			base_z-dz, base_z
-		);
+		control_do_step(0, 90, 30);
+		control_do_step(90, 90, 30);
+		control_do_step(90, 180, 30);
+		control_do_step(180, 180, 30);
+		control_do_step(180, 270, 30);
+		control_do_step(270, 270, 30);
+		control_do_step(270, 0, 30);
+		control_do_step(0, 0, 30);
 
 //		while(1) {
 //			while(!control_event) {SysCtlDelay(1000);} control_event = 0;
