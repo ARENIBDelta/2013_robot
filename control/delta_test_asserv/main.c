@@ -14,6 +14,7 @@
 #include "driverlib/timer.h"
 
 #include "parts/control.h"
+#include "parts/turret.h"
 #include "platform/pwm.h"
 #include "platform/uartbt.h"
 #include "tools/delta_calc.h"
@@ -457,16 +458,22 @@ void main(void) {
 		STEPS
 	);
 
+    turret_init();
+	turret_set_angle(0);
 
 	control_start_steps(0, 30, 0);
 	while(1) {
 		control_do_step(0, 90, 30);
+		turret_set_angle(90);
 		control_do_step(90, 90, 30);
 		control_do_step(90, 180, 30);
+		turret_set_angle(180);
 		control_do_step(180, 180, 30);
 		control_do_step(180, 270, 30);
+		turret_set_angle(270);
 		control_do_step(270, 270, 30);
 		control_do_step(270, 0, 30);
+		turret_set_angle(0);
 		control_do_step(0, 0, 30);
 
 //		while(1) {

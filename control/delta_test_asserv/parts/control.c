@@ -113,11 +113,11 @@ void control_init(void) {
 	enabled[4] = 0;
 	enabled[5] = 0;
 
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER3);
-	TimerConfigure(TIMER3_BASE, TIMER_CFG_PERIODIC);
-	TimerLoadSet(TIMER3_BASE, TIMER_A, SysCtlClockGet()/CONTROL_TIMER_FREQ);
-	IntEnable(INT_TIMER3A);
-	TimerIntEnable(TIMER3_BASE, TIMER_TIMA_TIMEOUT);
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER5);
+	TimerConfigure(TIMER5_BASE, TIMER_CFG_PERIODIC);
+	TimerLoadSet(TIMER5_BASE, TIMER_A, SysCtlClockGet()/CONTROL_TIMER_FREQ);
+	IntEnable(INT_TIMER5A);
+	TimerIntEnable(TIMER5_BASE, TIMER_TIMA_TIMEOUT);
 
 	IntMasterDisable();
 	config_pwms();
@@ -137,7 +137,7 @@ void control_enable_1(void) {
 	enabled[1] = 1;
 	enabled[2] = 1;
 	control_state_1 = 2;
-	TimerEnable(TIMER3_BASE, TIMER_A);
+	TimerEnable(TIMER5_BASE, TIMER_A);
 }
 
 void control_enable_2(void) {
@@ -146,7 +146,7 @@ void control_enable_2(void) {
 	enabled[4] = 1;
 	enabled[5] = 1;
 	control_state_2 = 2;
-	TimerEnable(TIMER3_BASE, TIMER_A);
+	TimerEnable(TIMER5_BASE, TIMER_A);
 }
 
 void control_disable_1(void) {
@@ -181,7 +181,7 @@ void control_go_to_origin_1(void) {
 	motor_set_pwm(0, 15, 1);
 	motor_set_pwm(1, 15, 1);
 	motor_set_pwm(2, 15, 1);
-	TimerEnable(TIMER3_BASE, TIMER_A);
+	TimerEnable(TIMER5_BASE, TIMER_A);
 }
 
 void control_go_to_origin_2(void) {
@@ -191,19 +191,19 @@ void control_go_to_origin_2(void) {
 	motor_set_pwm(3, 15, 1);
 	motor_set_pwm(4, 15, 1);
 	motor_set_pwm(5, 15, 1);
-	TimerEnable(TIMER3_BASE, TIMER_A);
+	TimerEnable(TIMER5_BASE, TIMER_A);
 }
 
 void control_stop_1(void) {
 	control_state_1 = 0;
 	if (!control_state_1 && !control_state_2)
-		TimerDisable(TIMER3_BASE, TIMER_A);
+		TimerDisable(TIMER5_BASE, TIMER_A);
 }
 
 void control_stop_2(void) {
 	control_state_2 = 0;
 	if (!control_state_1 && !control_state_2)
-		TimerDisable(TIMER3_BASE, TIMER_A);
+		TimerDisable(TIMER5_BASE, TIMER_A);
 }
 
 void qeis_spi_reinit(void) {
@@ -388,7 +388,7 @@ void control(void) {
 //	}
 }
 
-void Timer3IntHandler(void) {
+void Timer5IntHandler(void) {
 	if (control_state_1 == 1) {
 		control_t_1++;
 		if (control_t_1 == 400) {
@@ -414,5 +414,5 @@ void Timer3IntHandler(void) {
 		control_event = 1;
 	}
 
-    TimerIntClear(TIMER3_BASE, TIMER_TIMA_TIMEOUT);
+    TimerIntClear(TIMER5_BASE, TIMER_TIMA_TIMEOUT);
 }
