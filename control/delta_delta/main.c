@@ -11,6 +11,13 @@
 #include "platform/pwm.h"
 #include "platform/uartbt.h"
 
+#define CONTROL_DO_STEP_OR_DIE(a,b,c) \
+if (!control_do_step(a, b, c)) {      \
+	control_stop_1();                 \
+	control_stop_2();                 \
+	while(1);                         \
+}
+
 void main(void) {
 	//Config système
     SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
@@ -58,18 +65,77 @@ void main(void) {
 	//Script
 	control_start_steps(0, 30, 0);
 	while(1) {
-		control_do_step(0, 90, 30);
+		CONTROL_DO_STEP_OR_DIE(0, 90, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(90, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(90, 30, 1);
+		}
+
 		turret_set_angle(90);
-		control_do_step(90, 90, 30);
-		control_do_step(90, 180, 30);
+
+		CONTROL_DO_STEP_OR_DIE(90, 90, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(90, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(90, 30, 1);
+		}
+
+		CONTROL_DO_STEP_OR_DIE(90, 180, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(180, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(180, 30, 1);
+		}
+
 		turret_set_angle(180);
-		control_do_step(180, 180, 30);
-		control_do_step(180, 270, 30);
+
+		CONTROL_DO_STEP_OR_DIE(180, 180, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(180, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(180, 30, 1);
+		}
+
+		CONTROL_DO_STEP_OR_DIE(180, 270, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(270, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(270, 30, 1);
+		}
+
 		turret_set_angle(270);
-		control_do_step(270, 270, 30);
-		control_do_step(270, 0, 30);
+
+		CONTROL_DO_STEP_OR_DIE(270, 270, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(270, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(270, 30, 1);
+		}
+
+		CONTROL_DO_STEP_OR_DIE(270, 0, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(0, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(0, 30, 1);
+		}
+
 		turret_set_angle(0);
-		control_do_step(0, 0, 30);
+
+		CONTROL_DO_STEP_OR_DIE(0, 0, 30);
+		if (movement_is_paused()) {
+			control_stop_steps(0, 30, 1);
+			while(movement_is_paused())
+				movement_stay_put(0, 0, BASE_Z);
+			control_start_steps(0, 30, 1);
+		}
 	}
 
 }

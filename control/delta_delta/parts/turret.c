@@ -13,6 +13,8 @@
 #include <driverlib/pin_map.h>
 #include <driverlib/interrupt.h>
 
+#include "movement.h"
+
 //
 // PWM
 //
@@ -132,8 +134,17 @@ void set_goal(unsigned int g) {
 //
 
 unsigned long ulADC0_Value[2];
+#define ROLLING_VALUES_COUNT 25
+#define ROLLING_VALUES_THRESHOLD 20
+unsigned char rolling_values[ROLLING_VALUES_COUNT];
+unsigned char rolling_values_index = 0;
 
 void adc_init(void) {
+	unsigned char i;
+	for (i=ROLLING_VALUES_COUNT; i--;) {
+		rolling_values[i] = 0;
+	}
+
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
     GPIOPinTypeADC(GPIO_PORTB_BASE, GPIO_PIN_5);
     GPIOPinTypeADC(GPIO_PORTB_BASE, GPIO_PIN_4);
@@ -191,8 +202,25 @@ void turret_set_angle(unsigned short angle) {
 
 void Timer4IntHandler(void) {
 	unsigned char turret_value = turret_read();
+	rolling_values[rolling_values_index] = turret_value;
+	rolling_values_index = (rolling_values_index + 1) % ROLLING_VALUES_COUNT;
+	unsigned char i;
+	unsigned char sum = 0;
+	for (i=ROLLING_VALUES_COUNT; i--;) {
+		sum += rolling_values[i];
+	}
+	if (sum > ROLLING_VALUES_THRESHOLD) {
+		if (!movement_is_paused())
+			movement_pause();
+	}
+	else if (sum < ROLLING_VALUES_THRESHOLD) {
+		if (movement_is_paused())
+			movement_unpause();
+	}
+
+	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_2, movement_is_paused() ? GPIO_PIN_2 : 0);
+
 	step();
-	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_2, turret_value ? GPIO_PIN_2 : 0);
 	TimerIntClear(TIMER4_BASE, TIMER_TIMA_TIMEOUT);
 }
 
