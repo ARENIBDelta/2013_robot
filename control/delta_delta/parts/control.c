@@ -1,16 +1,15 @@
 #define PART_LM4F120B2QR
-#include "inc/hw_types.h"
-#include "inc/hw_memmap.h"
-#include "inc/hw_ints.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/gpio.h"
-#include "driverlib/ssi.h"
-#include "driverlib/timer.h"
-#include "driverlib/interrupt.h"
+#include <inc/hw_types.h>
+#include <inc/hw_memmap.h>
+#include <inc/hw_ints.h>
+#include <driverlib/gpio.h>
+#include <driverlib/ssi.h>
+#include <driverlib/timer.h>
+#include <driverlib/interrupt.h>
 
 #include "../platform/pwm.h"
-#include "control.h"
 #include "../tools/delta_calc.h"
+#include "control.h"
 
 //0 => rien
 //1 => init origine

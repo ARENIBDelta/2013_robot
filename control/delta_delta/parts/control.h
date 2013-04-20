@@ -1,10 +1,3 @@
-/*
- * control.h
- *
- *  Created on: Mar 10, 2013
- *      Author: ZWM
- */
-
 #ifndef CONTROL_H_
 #define CONTROL_H_
 

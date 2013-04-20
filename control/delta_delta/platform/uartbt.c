@@ -1,13 +1,13 @@
 #define PART_LM4F120B2QR
 #include <stdarg.h>
-#include "inc/hw_types.h"
-#include "inc/hw_memmap.h"
-#include "inc/hw_ints.h"
-#include "driverlib/interrupt.h"
-#include "driverlib/uart.h"
-#include "driverlib/debug.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/gpio.h"
+#include <inc/hw_types.h>
+#include <inc/hw_memmap.h>
+#include <inc/hw_ints.h>
+#include <driverlib/interrupt.h>
+#include <driverlib/uart.h>
+#include <driverlib/debug.h>
+#include <driverlib/pin_map.h>
+#include <driverlib/gpio.h>
 
 const char * const g_pcHex = "0123456789abcdef";
 unsigned long g_ulBase = UART5_BASE;

@@ -1,10 +1,3 @@
-/*
- * pwm.h
- *
- *  Created on: Mar 10, 2013
- *      Author: ZWM
- */
-
 #ifndef PWM_H_
 #define PWM_H_
 
@@ -19,6 +12,9 @@
 #define PULSE_MS 3
 
 void config_pwms(void);
-void set_pwm_width(uint32_t timer_base, uint32_t timer, uint32_t pulse_duration, uint8_t pulse_unit);
+void set_pwm_width(
+		uint32_t timer_base, uint32_t timer,
+		uint32_t pulse_duration, uint8_t pulse_unit
+);
 
 #endif /* PWM_H_ */

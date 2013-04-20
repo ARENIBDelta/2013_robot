@@ -1,6 +1,6 @@
-#include "inc/hw_types.h"
-#include "inc/hw_memmap.h"
-#include "driverlib/uart.h"
+#include <inc/hw_types.h>
+#include <inc/hw_memmap.h>
+#include <driverlib/uart.h>
 
 #include "../tools/layer2p.h"
 #include "pccontrol.h"

@@ -1,17 +1,20 @@
 #define PART_LM4F120B2QR
-#include "inc/hw_timer.h"
-#include "inc/hw_types.h"
-#include "inc/hw_gpio.h"
-#include "inc/hw_memmap.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/gpio.h"
 #include <stdint.h>
+#include <inc/hw_timer.h>
+#include <inc/hw_types.h>
+#include <inc/hw_gpio.h>
+#include <inc/hw_memmap.h>
+#include <driverlib/sysctl.h>
+#include <driverlib/timer.h>
+#include <driverlib/pin_map.h>
+#include <driverlib/gpio.h>
 
 #include "pwm.h"
 
-void set_pwm_width(uint32_t timer_base, uint32_t timer, uint32_t pulse_duration, uint8_t pulse_unit) {
+void set_pwm_width(
+		uint32_t timer_base, uint32_t timer,
+		uint32_t pulse_duration, uint8_t pulse_unit
+) {
 	   uint32_t pwm_period;
 	   switch(pulse_unit) {
 		   case PULSE_100NS:
