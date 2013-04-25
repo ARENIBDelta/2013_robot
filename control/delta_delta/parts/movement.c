@@ -271,6 +271,50 @@ unsigned char control_do_step(float angle_src, float angle_dst, char length) {
 	return 1;
 }
 
+unsigned char control_do_half_step(float angle_src, float angle_dst, char length) {
+	angle_src = angle_src * M_PI / 180;
+	angle_dst = angle_dst * M_PI / 180;
+	float dir_x_src = cos(angle_src);
+	float dir_y_src = sin(angle_src);
+	float dir_x_dst = cos(angle_dst);
+	float dir_y_dst = sin(angle_dst);
+
+	float lx = dir_x_src*length;
+	float ly = dir_y_src*length;
+
+	control_do_lines(
+		-0.625*lx, -lx,
+		-0.625*ly, -ly,
+		BASE_Z, BASE_Z-DZ,
+		0.625*lx, 0.25*lx,
+		0.625*ly, 0.25*ly,
+		BASE_Z, BASE_Z,
+		STEPS
+	);
+
+	control_do_lines(
+		-lx, lx,
+		-ly, ly,
+		BASE_Z-DZ, BASE_Z-DZ,
+		0.25*lx, -0.25*lx,
+		0.25*ly, -0.25*ly,
+		BASE_Z, BASE_Z,
+		STEPS
+	);
+
+	control_do_lines(
+		lx, 0.625*lx,
+		ly, 0.625*ly,
+		BASE_Z-DZ, BASE_Z,
+		-0.25*lx, -0.625*lx,
+		-0.25*ly, -0.625*ly,
+		BASE_Z, BASE_Z,
+		STEPS
+	);
+
+	return 1;
+}
+
 void control_stop_steps(float angle, unsigned char length, unsigned char step_down) {
 	angle = angle * M_PI  / 180;
 	float dir_x = cos(angle);

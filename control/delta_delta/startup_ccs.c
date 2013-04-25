@@ -30,6 +30,7 @@ extern unsigned long __STACK_TOP;
 //*****************************************************************************
 extern void Timer5IntHandler(void);
 extern void Timer4IntHandler(void);
+extern void Timer4BIntHandler(void);
 extern void UARTPCControlIntHandler(void);
 
 extern void rien(void);
@@ -133,7 +134,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // I2C2 Master and Slave
     IntDefaultHandler,                      // I2C3 Master and Slave
     Timer4IntHandler,                       // Timer 4 subtimer A
-    IntDefaultHandler,                      // Timer 4 subtimer B
+    Timer4BIntHandler,                      // Timer 4 subtimer B
     0,                                      // Reserved
     0,                                      // Reserved
     0,                                      // Reserved

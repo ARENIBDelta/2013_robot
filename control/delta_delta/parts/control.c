@@ -11,6 +11,10 @@
 #include "../tools/delta_calc.h"
 #include "control.h"
 
+#define QEIS_VALID_MIN 9600
+#define QEIS_VALID_MAX 10800
+#define QEIS_ERRS_THRESHOLD 10
+
 //0 => rien
 //1 => init origine
 //2 => travaille
@@ -43,6 +47,8 @@ unsigned char qeis_to_motor[6] = {4,2,1,5,6,3};
 unsigned char control_reached_1 = 0;
 unsigned char control_reached_2 = 0;
 unsigned char control_event = 0;
+
+unsigned error_count = 0;
 
 void motor_set_pwm(unsigned char motor, unsigned char duty_cycle, unsigned char dir) {
 	motor = angles_to_motor[motor] - 1;
@@ -220,7 +226,7 @@ void qeis_spi_reinit(void) {
     GPIOPinTypeSSI(GPIO_PORTD_BASE,
     		GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
     SSIConfigSetExpClk(SSI1_BASE, SysCtlClockGet(), SSI_FRF_MOTO_MODE_3,
-                       SSI_MODE_MASTER, 75000, 8);
+                       SSI_MODE_MASTER, 60000, 8);
     SSIEnable(SSI1_BASE);
 }
 
@@ -344,6 +350,27 @@ void control(void) {
 	IntMasterDisable();
 	qeis_spi_read();
 	IntMasterEnable();
+
+	//Check QEIS
+	for (i=6; i--;) {
+		if ((qeis[i] < QEIS_VALID_MIN) || (qeis[i] > QEIS_VALID_MAX) || (errs[i] > QEIS_ERRS_THRESHOLD)) {
+			error_count++;
+			if ((error_count > 32) || (errs[i] > QEIS_ERRS_THRESHOLD)) {
+				control_disable_1();
+				control_disable_2();
+				control_stop_1();
+				control_stop_2();
+				unsigned char flick = 0;
+				SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+				GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2);
+				while(1) {
+					flick = flick ? 0 : 1;
+					GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_2, flick ? GPIO_PIN_2 : 0);
+					SysCtlDelay(SysCtlClockGet()/10);
+				}
+			}
+		}
+	}
 
 	//Calc
 	for(i=6;i--;) {

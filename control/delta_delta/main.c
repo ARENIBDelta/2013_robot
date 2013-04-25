@@ -10,13 +10,27 @@
 #include "parts/turret.h"
 #include "platform/pwm.h"
 #include "platform/uartbt.h"
+#include "parts/init.h"
+#include "parts/actuators.h"
 
-#define CONTROL_DO_STEP_OR_DIE(a,b,c) \
-if (!control_do_step(a, b, c)) {      \
-	control_stop_1();                 \
-	control_stop_2();                 \
-	while(1);                         \
-}
+#define CONTROL_DO_STEP_OR_DIE_OR_PAUSE(a,b,c) \
+turret_set_angle(a);                      \
+if (!control_do_step(a, b, c)) {          \
+	control_stop_1();                     \
+	control_stop_2();                     \
+	while(1);                             \
+}                                         \
+else {                                    \
+	if (movement_is_paused()) {           \
+		control_stop_steps(b, c, 1);      \
+		while(movement_is_paused())       \
+		movement_stay_put(0, 0, BASE_Z);  \
+		control_start_steps(b, c, 1);     \
+	}                                     \
+}                                         \
+
+unsigned char is_blue = 0;
+const unsigned char do_init = 1;
 
 void main(void) {
 	//Config système
@@ -32,6 +46,13 @@ void main(void) {
     motor_set_pwm_limits_all(40);
     control_init();
 
+	if (do_init) {
+		init_init();
+		while(!init_is_ready());
+		SysCtlDelay(SysCtlClockGet()/10);
+		is_blue = init_is_blue();
+	}
+
     //Init
     control_go_to_origin_1();
     control_go_to_origin_2();
@@ -43,99 +64,110 @@ void main(void) {
 	control_disable_2();
 	control_stop_2();
 
+	if (do_init) {
+		while(!init_is_ready());
+		SysCtlDelay(SysCtlClockGet()/100);
+	}
+
 	//Démarrage propulsion
-	motor_set_pwm_limits_all(99);
+	motor_set_pwm_limits_all(30);
 	control_enable_1();
     control_enable_2();
 
 	control_do_lines(
 		0, 0,
 		0, 0,
-		170, BASE_Z-DZ,
+		170, BASE_Z,
 		0, 0,
 		0, 0,
 		170, BASE_Z,
 		STEPS
 	);
 
+	actuators_init(); //A demarrer avant la tourelle car timer partagé
+	actuators_lower(0);
+	actuators_lower(1);
+
 	//Init et démarrage tourelle
     turret_init();
-	turret_set_angle(0);
+	turret_set_angle(90);
 
-	//Script
-	control_start_steps(0, 30, 0);
-	while(1) {
-		CONTROL_DO_STEP_OR_DIE(0, 90, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(90, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(90, 30, 1);
-		}
-
-		turret_set_angle(90);
-
-		CONTROL_DO_STEP_OR_DIE(90, 90, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(90, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(90, 30, 1);
-		}
-
-		CONTROL_DO_STEP_OR_DIE(90, 180, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(180, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(180, 30, 1);
-		}
-
-		turret_set_angle(180);
-
-		CONTROL_DO_STEP_OR_DIE(180, 180, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(180, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(180, 30, 1);
-		}
-
-		CONTROL_DO_STEP_OR_DIE(180, 270, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(270, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(270, 30, 1);
-		}
-
-		turret_set_angle(270);
-
-		CONTROL_DO_STEP_OR_DIE(270, 270, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(270, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(270, 30, 1);
-		}
-
-		CONTROL_DO_STEP_OR_DIE(270, 0, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(0, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(0, 30, 1);
-		}
-
-		turret_set_angle(0);
-
-		CONTROL_DO_STEP_OR_DIE(0, 0, 30);
-		if (movement_is_paused()) {
-			control_stop_steps(0, 30, 1);
-			while(movement_is_paused())
-				movement_stay_put(0, 0, BASE_Z);
-			control_start_steps(0, 30, 1);
+	if (do_init) {
+		while(!init_tirette_go()) {
+			movement_stay_put(0, 0, BASE_Z);
 		}
 	}
+
+	motor_set_pwm_limits_all(99);
+
+	control_do_lines(
+		0, 0,
+		0, 0,
+		BASE_Z, BASE_Z-DZ,
+		0, 0,
+		0, 0,
+		BASE_Z, BASE_Z,
+		STEPS
+	);
+
+	//Script
+	control_start_steps(180, 25, 0);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(180, 90, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 0, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
+
+	control_do_half_step(0, 0, 25);
+
+	actuators_raise(0);
+	actuators_raise(1);
+
+	float angle = 0 * M_PI  / 180;
+	unsigned int count = 200;
+	while(count--) {
+		movement_stay_put(25*cos(angle), 25*sin(angle), BASE_Z);
+	}
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(180, 90, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	actuators_lower(0);
+	actuators_lower(1);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 0, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
+
+	control_do_half_step(0, 0, 25);
+
+	actuators_raise(0);
+	actuators_raise(1);
+
+	angle = 0 * M_PI  / 180;
+	count = 200;
+	while(count--) {
+		movement_stay_put(25*cos(angle), 25*sin(angle), BASE_Z);
+	}
+
+	control_stop_steps(180, 25, 1);
+	while(1)
+		movement_stay_put(0, 0, BASE_Z);
 
 }

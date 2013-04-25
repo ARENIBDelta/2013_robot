@@ -27,7 +27,7 @@
 #define PULSE_100NS 2
 #define PULSE_MS 3
 
-void pwm_init(void) {
+static void pwm_init(void) {
 	uint32_t frequency = 50;
 
 	uint32_t period1 = SysCtlClockGet() / frequency;
@@ -54,7 +54,7 @@ void pwm_init(void) {
 	TimerEnable(TIMER3_BASE, TIMER_A);
 }
 
-void pwm_set_width(uint32_t pulse_duration, uint8_t pulse_unit) {
+static void pwm_set_width(uint32_t pulse_duration, uint8_t pulse_unit) {
 	   uint32_t pwm_period;
 	   switch(pulse_unit) {
 		   case PULSE_100NS:
@@ -81,12 +81,12 @@ void pwm_set_width(uint32_t pulse_duration, uint8_t pulse_unit) {
 #define MIN 17750
 #define ACCELERATION_INCR 20
 #define MAX_SPEED 100
-unsigned char state = 0;
-unsigned int goal = 19400;
-int speed = 200;
-unsigned int pos = 17650;
+static unsigned char state = 0;
+static unsigned int goal = 19400;
+static int speed = 200;
+static unsigned int pos = 17650;
 
-void step(void) {
+static void step(void) {
 	if (state == 1) {
 //		if (pos > goal - 200) {
 //			speed = speed - 40;
@@ -120,7 +120,7 @@ void step(void) {
 	pwm_set_width(pos, PULSE_US);
 }
 
-void set_goal(unsigned int g) {
+static void set_goal(unsigned int g) {
 	goal = g;
 	speed = 50;
 	if (g > pos)
@@ -182,11 +182,12 @@ void turret_init(void) {
 	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_2, GPIO_PIN_2);
 
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER4);
-	TimerConfigure(TIMER4_BASE, TIMER_CFG_PERIODIC);
+	TimerConfigure(TIMER4_BASE, TIMER_CFG_A_PERIODIC | TIMER_CFG_B_PERIODIC | TIMER_CFG_SPLIT_PAIR); //Timer B pour les actionneurs
 	TimerLoadSet(TIMER4_BASE, TIMER_A, SysCtlClockGet()/50);
 	IntEnable(INT_TIMER4A);
 	TimerIntEnable(TIMER4_BASE, TIMER_TIMA_TIMEOUT);
 	TimerEnable(TIMER4_BASE, TIMER_A);
+	TimerEnable(TIMER4_BASE, TIMER_B);
 }
 
 unsigned char turret_read(void) {

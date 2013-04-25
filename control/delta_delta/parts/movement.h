@@ -7,7 +7,7 @@
 #include "../tools/delta_calc.h"
 #include "control.h"
 
-#define STEPS    76
+#define STEPS    50
 #define BASE_Z   200
 #define DZ       30
 
@@ -27,6 +27,7 @@ void control_do_lines(
 );
 void          control_start_steps(float angle, unsigned char length, unsigned char step_down);
 unsigned char control_do_step(float angle_src, float angle_dst, char length);
+unsigned char control_do_half_step(float angle_src, float angle_dst, char length);
 void          control_stop_steps(float angle, unsigned char length, unsigned char step_down);
 void          movement_stay_put(float X, float Y, float Z);
 void movement_pause(void);

@@ -133,7 +133,7 @@ void config_pwms(void) {
 	GPIOPinTypeTimer(GPIO_PORTF_BASE, GPIO_PIN_4);
 	// Configure timer
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
-	TimerConfigure(TIMER2_BASE, TIMER_CFG_SPLIT_PAIR|TIMER_CFG_A_PWM);
+	TimerConfigure(TIMER2_BASE, TIMER_CFG_SPLIT_PAIR|TIMER_CFG_A_PWM|TIMER_CFG_B_PWM); //TIMER_CFG_B_PWM pour les actionneurs
 	HWREG(TIMER2_BASE + TIMER_O_CTL) |= (TIMER_CTL_TAPWML);
 	//set period
 	TimerPrescaleSet(TIMER2_BASE, TIMER_A, extender1);
@@ -142,6 +142,7 @@ void config_pwms(void) {
 	TimerPrescaleMatchSet(TIMER2_BASE, TIMER_A, extender2);
 	TimerMatchSet(TIMER2_BASE, TIMER_A, period2);
 	TimerEnable(TIMER2_BASE, TIMER_A);
+	TimerEnable(TIMER2_BASE, TIMER_B); //Pour les actionneurs
 	set_pwm_width(TIMER2_BASE, TIMER_A, 50, PULSE_US);
 
 }

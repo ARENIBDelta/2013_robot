@@ -2,13 +2,13 @@
    
    VCC                   VCC  3.3V  VBUS
    Tourelle Anal         AIN  PB5   PD0  SSI0CLK       SPI QEIS UCA0CLK
-   PWM Actionneur 3      PWM  PB1   PD1
+   PWM Actionneur 3      PWM  PB1   PD1  GPIO PE3      GPIO INIT 2
    UART BT RX         UART5RX PE4   PD2  SSI0RX        SPI QEIS UCA0SOMI
    UART BT TX         UART5TX PE5   PD3  SSI0TX        SPI QEIS UCA0SIMO
-   Tourelle Anal 2            PB4   PE1  GPIO PE1      SPI QEIS CS
-   Tourelle EN1               PA5   PE2
-   Tourelle EN2               PA6   PE3
-                              PA7   PF1  SSI1TX        Reserve SSI
+   Tourelle Anal 2            PB4   PE1  GPIO PE1      SPI QEIS CS1
+   Tourelle EN1               PA5   PE2  GPIO PE2      SPI QEIS CS2
+   Tourelle EN2               PA6   PE3  GPIO PE3      GPIO INIT 1
+   GPIO INIT 3       GPIO PA7 PA7   PF1  SSI1TX        Reserve SSI
    
                             
    Destination   Désignation  J4    J2   Designation   Destination
