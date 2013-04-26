@@ -25,7 +25,7 @@ else {                                    \
 		control_stop_steps(b, c, 1);      \
 		while(movement_is_paused())       \
 		movement_stay_put(0, 0, BASE_Z);  \
-		control_start_steps(b, c, 1);     \
+		control_start_steps2(b, c);       \
 	}                                     \
 }                                         \
 
@@ -100,18 +100,7 @@ void main(void) {
 
 	motor_set_pwm_limits_all(99);
 
-	control_do_lines(
-		0, 0,
-		0, 0,
-		BASE_Z, BASE_Z-DZ,
-		0, 0,
-		0, 0,
-		BASE_Z, BASE_Z,
-		STEPS
-	);
-
-	//Script
-	control_start_steps(180, 25, 0);
+	control_start_steps2(180, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(180, 90, 25);
 
@@ -122,6 +111,8 @@ void main(void) {
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 0, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
 
@@ -150,8 +141,13 @@ void main(void) {
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 0, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
+
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
 
@@ -167,6 +163,8 @@ void main(void) {
 	}
 
 	control_stop_steps(180, 25, 1);
+	actuators_lower(0);
+	actuators_lower(1);
 	while(1)
 		movement_stay_put(0, 0, BASE_Z);
 

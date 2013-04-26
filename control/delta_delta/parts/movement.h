@@ -26,6 +26,7 @@ void control_do_lines(
 		short steps
 );
 void          control_start_steps(float angle, unsigned char length, unsigned char step_down);
+void          control_start_steps2(float angle, unsigned char length);
 unsigned char control_do_step(float angle_src, float angle_dst, char length);
 unsigned char control_do_half_step(float angle_src, float angle_dst, char length);
 void          control_stop_steps(float angle, unsigned char length, unsigned char step_down);
