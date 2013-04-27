@@ -142,7 +142,6 @@ void config_pwms(void) {
 	TimerPrescaleMatchSet(TIMER2_BASE, TIMER_A, extender2);
 	TimerMatchSet(TIMER2_BASE, TIMER_A, period2);
 	TimerEnable(TIMER2_BASE, TIMER_A);
-	TimerEnable(TIMER2_BASE, TIMER_B); //Pour les actionneurs
 	set_pwm_width(TIMER2_BASE, TIMER_A, 50, PULSE_US);
 
 }

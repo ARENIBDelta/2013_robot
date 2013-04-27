@@ -7,7 +7,7 @@
 #include "../tools/delta_calc.h"
 #include "control.h"
 
-#define STEPS    50
+#define STEPS    45
 #define BASE_Z   200
 #define DZ       30
 

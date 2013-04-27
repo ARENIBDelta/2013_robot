@@ -41,6 +41,13 @@ void main(void) {
 
     //configure_uart_bt();
 
+	actuators_servos_init(); //A demarrer avant la tourelle car timer partagé
+	actuators_servo_lower(0);
+	actuators_servo_lower(1);
+
+	actuator_pwm_init();
+	actuator_pwm_zero();
+
 	//Config propulsion
     config_pwms();
     motor_set_pwm_limits_all(40);
@@ -84,9 +91,9 @@ void main(void) {
 		STEPS
 	);
 
-	actuators_init(); //A demarrer avant la tourelle car timer partagé
-	actuators_lower(0);
-	actuators_lower(1);
+	actuators_servos_init(); //A demarrer avant la tourelle car timer partagé
+	actuators_servo_lower(0);
+	actuators_servo_lower(1);
 
 	//Init et démarrage tourelle
     turret_init();
@@ -120,8 +127,8 @@ void main(void) {
 
 	control_do_half_step(0, 0, 25);
 
-	actuators_raise(0);
-	actuators_raise(1);
+	actuators_servo_raise(0);
+	actuators_servo_raise(1);
 
 	float angle = 0 * M_PI  / 180;
 	unsigned int count = 200;
@@ -134,8 +141,8 @@ void main(void) {
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
-	actuators_lower(0);
-	actuators_lower(1);
+	actuators_servo_lower(0);
+	actuators_servo_lower(1);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
@@ -153,8 +160,8 @@ void main(void) {
 
 	control_do_half_step(0, 0, 25);
 
-	actuators_raise(0);
-	actuators_raise(1);
+	actuators_servo_raise(0);
+	actuators_servo_raise(1);
 
 	angle = 0 * M_PI  / 180;
 	count = 200;
@@ -163,8 +170,8 @@ void main(void) {
 	}
 
 	control_stop_steps(180, 25, 1);
-	actuators_lower(0);
-	actuators_lower(1);
+	actuators_servo_lower(0);
+	actuators_servo_lower(1);
 	while(1)
 		movement_stay_put(0, 0, BASE_Z);
 
