@@ -30,6 +30,7 @@ extern unsigned long __STACK_TOP;
 //*****************************************************************************
 extern void Timer5IntHandler(void);
 extern void Timer4IntHandler(void);
+extern void WTimer3IntHandler(void);
 extern void Timer4BIntHandler(void);
 extern void UARTPCControlIntHandler(void);
 
@@ -163,7 +164,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // Wide Timer 1 subtimer B
     IntDefaultHandler,                      // Wide Timer 2 subtimer A
     IntDefaultHandler,                      // Wide Timer 2 subtimer B
-    IntDefaultHandler,                      // Wide Timer 3 subtimer A
+    WTimer3IntHandler,                      // Wide Timer 3 subtimer A
     IntDefaultHandler,                      // Wide Timer 3 subtimer B
     IntDefaultHandler,                      // Wide Timer 4 subtimer A
     IntDefaultHandler,                      // Wide Timer 4 subtimer B

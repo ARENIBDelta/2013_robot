@@ -12,6 +12,7 @@
 #include "platform/uartbt.h"
 #include "parts/init.h"
 #include "parts/actuators.h"
+#include "parts/match_timer.h"
 
 #define CONTROL_DO_STEP_OR_DIE_OR_PAUSE(a,b,c) \
 turret_set_angle(a);                      \
@@ -31,6 +32,22 @@ else {                                    \
 
 unsigned char is_blue = 0;
 const unsigned char do_init = 1;
+
+#include <inc/hw_memmap.h>
+#include <driverlib/gpio.h>
+
+extern unsigned long __STACK_END;
+void reset_stack(unsigned long stack_addr);
+
+void main_match_ended(void) {
+	reset_stack((unsigned int) &__STACK_END);
+
+    motor_set_pwm_limits_all(25);
+
+    while(1) {
+    	movement_stay_put(0, 0, BASE_Z);
+    }
+}
 
 void main(void) {
 	//Config système
@@ -104,6 +121,9 @@ void main(void) {
 			movement_stay_put(0, 0, BASE_Z);
 		}
 	}
+
+	match_timer_init();
+	match_timer_start();
 
 	motor_set_pwm_limits_all(99);
 

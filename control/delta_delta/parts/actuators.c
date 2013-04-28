@@ -168,7 +168,7 @@ void Timer4BIntHandler(void) {
 }
 
 void actuator_pwm_init(void) {
-	uint32_t frequency = 30000;
+	uint32_t frequency = 3000;
 
 	uint32_t period1 = SysCtlClockGet() / frequency;
 	uint32_t extender1 = period1 >> 16;
@@ -202,14 +202,14 @@ void actuator_pwm_zero(void) {
 }
 
 void actuator_pwm_50percent(void) {
-	pwm_set_width(2, 33-16, PULSE_US);
+	pwm_set_width(2, 330-160, PULSE_US);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 	GPIOPinConfigure(GPIO_PB1_T2CCP1);
 	GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_1);
 	TimerEnable(TIMER2_BASE, TIMER_B);
 }
 void actuator_pwm_30percent(void) {
-	pwm_set_width(2, 33-10, PULSE_US);
+	pwm_set_width(2, 330-100, PULSE_US);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
 	GPIOPinConfigure(GPIO_PB1_T2CCP1);
 	GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_1);
