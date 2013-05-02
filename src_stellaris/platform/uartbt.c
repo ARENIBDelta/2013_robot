@@ -9,33 +9,78 @@
 #include <driverlib/pin_map.h>
 #include <driverlib/gpio.h>
 
+#include "../parts/actuators.h"
+
 const char * const g_pcHex = "0123456789abcdef";
 unsigned long g_ulBase = UART5_BASE;
 
+unsigned char UART5_buffer_state = 0;
+#define UART5_buffer_size (4*sizeof(int)+2)
+unsigned char UART5_buffer[UART5_buffer_size];
+unsigned char *UART5_buffer_pointer;
+
+extern unsigned short go_angle;
+extern unsigned char  new_order;
+
 void rien(void) {
-	  unsigned long ulStatus;
-	  ulStatus = UARTIntStatus(UART5_BASE, 1);
-	  UARTIntClear(UART5_BASE, ulStatus);
-	return;
+    unsigned long ulStatus;
+    ulStatus = UARTIntStatus(UART5_BASE, true);
+    UARTIntClear(UART5_BASE, ulStatus);
+
+    while(UARTCharsAvail(UART5_BASE)) {
+        char c = UARTCharGet(UART5_BASE);
+        switch(UART5_buffer_state) {
+        case 1:
+            //On reçoit alpha, beta et gamma
+            *UART5_buffer_pointer = c;
+            UART5_buffer_pointer++;
+            if (UART5_buffer_pointer - UART5_buffer >= 3) {
+                UART5_buffer_state = 0;
+                UART5_buffer_pointer = UART5_buffer;
+                unsigned char should_move = UART5_buffer[2];
+                if (should_move) {
+                    go_angle = UART5_buffer[0] | (UART5_buffer[1] << 8);
+                    if (go_angle > 360)
+                    	go_angle = 0;
+                	new_order = 1;
+                }
+                else {
+                	new_order = 0;
+                }
+            }
+            break;
+        default:
+            //On reçoit un int de start ou une commande aimant
+            if ((c == 0xFE) && (UART5_buffer_pointer - UART5_buffer == 3)) {
+                //Aimant activé
+                UART5_buffer_pointer = UART5_buffer;
+                actuators_servo_raise(0);
+                actuators_servo_raise(1);
+            }
+            else if ((c == 0xFD) && (UART5_buffer_pointer - UART5_buffer == 3)) {
+                //Aimant désactivé
+            	actuators_servo_lower(0);
+            	actuators_servo_lower(1);
+                UART5_buffer_pointer = UART5_buffer;
+            }
+            else if (c != 0xFF) {
+                //Truc pas normal, on reset la stack
+                UART5_buffer_pointer = UART5_buffer;
+            }
+            else {
+                //Octet de start
+                *UART5_buffer_pointer = c;
+                UART5_buffer_pointer++;
+                if (UART5_buffer_pointer - UART5_buffer >= 4) {
+                    //Passage en réception des angles
+                    UART5_buffer_state = 1;
+                    UART5_buffer_pointer = UART5_buffer;
+                }
+            }
+        }
+    }
 }
 
-//void configure_uart_bt(void) {
-//	g_ulBase = INT_UART0;
-//
-//    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
-//    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-//    GPIOPinConfigure(GPIO_PA0_U0RX);
-//    GPIOPinConfigure(GPIO_PA1_U0TX);
-//    GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
-//
-//    UARTConfigSetExpClk(UART5_BASE, SysCtlClockGet(), 38400,
-//                                (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
-//                                 UART_CONFIG_PAR_NONE));
-//    UARTFIFODisable(UART5_BASE);
-//    //UARTFIFOLevelSet(UART5_BASE, UART_FIFO_TX1_8, UART_FIFO_RX1_8);
-//    IntEnable(INT_UART0);
-//    UARTIntEnable(UART5_BASE, UART_INT_RX | UART_INT_TX);
-//}
 
 void configure_uart_bt(void) {
 	g_ulBase = UART5_BASE;

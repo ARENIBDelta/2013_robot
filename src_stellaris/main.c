@@ -2,8 +2,11 @@
 #include <inc/hw_types.h>
 #include <driverlib/fpu.h>
 #include <driverlib/sysctl.h>
+#include <driverlib/interrupt.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#define REMOTE_CONTROL  1
 
 #include "parts/movement.h"
 #include "parts/control.h"
@@ -32,6 +35,14 @@ else {                                    \
 
 unsigned char is_blue = 0;
 const unsigned char do_init = 1;
+
+#if REMOTE_CONTROL
+unsigned char  remote_state = 0;
+unsigned short current_angle1 = 0;
+unsigned short current_angle2 = 0;
+unsigned short go_angle = 0;
+unsigned short new_order = 0;
+#endif
 
 #include <inc/hw_memmap.h>
 #include <driverlib/gpio.h>
@@ -64,6 +75,10 @@ void main(void) {
 
 	actuator_pwm_init();
 	actuator_pwm_zero();
+
+#if REMOTE_CONTROL
+	configure_uart_bt();
+#endif
 
 	//Config propulsion
     config_pwms();
@@ -122,10 +137,57 @@ void main(void) {
 		}
 	}
 
-	match_timer_init();
-	match_timer_start();
+	//match_timer_init();
+	//match_timer_start();
 
 	motor_set_pwm_limits_all(99);
+
+#if REMOTE_CONTROL
+
+	while(1) {
+		switch(remote_state) {
+		case 3:
+			control_stop_steps(current_angle1, 25, 1);
+			remote_state = 0;
+			new_order = 0;
+			break;
+		case 2:
+			CONTROL_DO_STEP_OR_DIE_OR_PAUSE(current_angle1, current_angle2, 25);
+			current_angle1 = current_angle2;
+			IntMasterDisable();
+			if (new_order) {
+				current_angle2 = go_angle;
+				remote_state = 2;
+			}
+			else {
+				remote_state = 3;
+			}
+			IntMasterEnable();
+			new_order = 0;
+			break;
+		case 1:
+			control_start_steps2(current_angle1, 25);
+			new_order = 0;
+			remote_state = 2;
+			break;
+		default:
+		case 0:
+			movement_stay_put(0, 0, BASE_Z);
+			IntMasterDisable();
+			if (new_order) {
+				current_angle1 = go_angle;
+				current_angle2 = go_angle;
+				remote_state = 1;
+			}
+			IntMasterEnable();
+			new_order = 0;
+			break;
+		}
+
+		new_order = 0;
+	}
+
+#else
 
 	control_start_steps2(180, 25);
 
@@ -161,20 +223,14 @@ void main(void) {
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
+	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	actuators_servo_lower(0);
 	actuators_servo_lower(1);
-	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
-
-	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
-	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 90, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(90, 0, 25);
-
-	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
-
-	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
 
 	CONTROL_DO_STEP_OR_DIE_OR_PAUSE(0, 0, 25);
 
@@ -194,5 +250,7 @@ void main(void) {
 	actuators_servo_lower(1);
 	while(1)
 		movement_stay_put(0, 0, BASE_Z);
+
+#endif
 
 }
